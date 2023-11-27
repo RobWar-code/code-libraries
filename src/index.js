@@ -6,8 +6,9 @@ import {
 } from "react-router-dom";
 import "./styles/index.css";
 import Root from "./routes/root";
-import Introduction from "./routes/introduction"
-import LineCircleIntersects from "./routes/line-circle-intersects"
+import Introduction from "./routes/introduction";
+import LineCircleIntersects from "./routes/line-circle-intersects";
+import CircleIntersects from "./routes/circle-intersects";
 
 const router = createBrowserRouter([
     {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
             {
                 path: "/line-circle-intersects",
                 element: <LineCircleIntersects />
+            },
+            {
+                path: "/circle-intersects",
+                element: <CircleIntersects />
             }
         ]
     }

@@ -9,6 +9,7 @@ import Root from "./routes/root";
 import Introduction from "./routes/introduction";
 import LineCircleIntersects from "./routes/line-circle-intersects";
 import CircleIntersects from "./routes/circle-intersects";
+import RadialVectorPoints from "./routes/radial-vector-points.js"
 
 const router = createBrowserRouter([
     {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
             {
                 path: "/circle-intersects",
                 element: <CircleIntersects />
+            },
+            {
+                path: "/radial-vector-points",
+                element: <RadialVectorPoints />
             }
         ]
     }

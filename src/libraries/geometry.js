@@ -51,12 +51,12 @@ export function lineCircleIntersects (lineSpec, radius, centreX, centreY) {
 
 /**
  * 
- * @param {*} x1  - centre of circle 1
- * @param {*} y1  - centre of circle 1
- * @param {*} r1  - radius of circle 1
- * @param {*} x2  - centre of circle 2
- * @param {*} y2  - centre of circle 2
- * @param {*} r2  - radius of circle 2
+ * @param {number} x1  - centre of circle 1
+ * @param {number} y1  - centre of circle 1
+ * @param {number} r1  - radius of circle 1
+ * @param {number} x2  - centre of circle 2
+ * @param {number} y2  - centre of circle 2
+ * @param {number} r2  - radius of circle 2
  * @returns [{x:, y:}, {x:, y:}] or [] if no intersections.
  */
 export function circleIntersects(x1, y1, r1, x2, y2, r2) {
@@ -88,4 +88,36 @@ export function circleIntersects(x1, y1, r1, x2, y2, r2) {
     // Return the points of intersection
     
     return [{ x: x4_1, y: y4_1 }, { x: x4_2, y: y4_2 }];
+}
+
+/**
+ * Get upper and lower tangent points of the vectors parallel to dx, dy
+ * @param {number} cx - centre of circle
+ * @param {number} cy - centre of circle
+ * @param {number} r - radius of circle
+ * @param {number} dx - vector x at centre
+ * @param {number} dy - vector y at centre
+ * @return {Array} [{x: x1, y: y1}, {x: x2, y: y2}]
+ */
+export function radialVectorPoints(cx, cy, r, dx, dy) {
+
+    // derive the first vector at right angles to dx,dy
+    const dx1 = dy;
+    const dy1 = -dx;
+    // normalise the vectors and adjust for r
+    let x1 = r * dx1 / Math.sqrt(dx1 ** 2 + dy1 ** 2);
+    let y1 = r * dy1 / Math.sqrt(dx1 ** 2 + dy1 ** 2);
+    x1 = x1 + cx;
+    y1 = y1 + cy;
+
+    // The second point
+    const dx2 = -dy
+    const dy2 = dx
+    // normalise the vectors and adjust for r
+    let x2 = r * dx2 / Math.sqrt(dx2 ** 2 + dy2 ** 2);
+    let y2 = r * dy2 / Math.sqrt(dx2 ** 2 + dy2 ** 2);
+    x2 = x2 + cx;
+    y2 = y2 + cy;
+
+    return [{x: x1, y: y1}, {x: x2, y: y2}]
 }

@@ -24,6 +24,7 @@ function NavBar() {
             <Nav.Link as={Link} to="/">Intro</Nav.Link>
             <Nav.Link as={Link} to="/line-circle-intersects">LineCircleIntersects</Nav.Link>
             <Nav.Link as={Link} to="/circle-intersects">CircleIntersects</Nav.Link>
+            <Nav.Link as={Link} to="/radial-vector-points">RadialVectorPoints</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

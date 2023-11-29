@@ -121,3 +121,159 @@ export function radialVectorPoints(cx, cy, r, dx, dy) {
 
     return [{x: x1, y: y1}, {x: x2, y: y2}]
 }
+
+/**
+ * 
+ * @param {number} c1x - centre of circle 1
+ * @param {number} c1y - centre of circle 1
+ * @param {number} r - radius circle 1
+ * @param {number} c2x - centre of circle 1 at further position
+ * @param {number} c2y - centre of circle 1 at further position
+ * @param {number} c3x - centre of circular arc
+ * @param {number} c3y - centre of circular arc
+ * @param {number} r3 - radius of circular arc
+ * @param {number} corner - (0 - top-left, 1 - top-right, 2 - bottom-right, 3 - bottom-left)
+ * @returns [hit, centreOfContactPosition - c5x, c5y]
+ */
+export function movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, r3, corner) {
+    // Get the vector between C1, C2
+    const d1x = c2x - c1x;
+    const d1y = c2y - c1y;
+    // normalise
+    const v1x = d1x / Math.sqrt(d1x ** 2 + d1y ** 2);
+    const v1y = d1y / Math.sqrt(d1y ** 2 + d1x ** 2);
+
+    // Get radial vector points
+    let rs = [];
+    rs[0] = radialVectorPoints(c1x, c1y, r, v1x, v1y);
+    rs[1] = radialVectorPoints(c2x, c2y, r, v1x, v1y);
+
+    // Determine the trajectories and their intersects of C3
+    let found = 0;
+    let i1x, i1y, p1y, p1x, v1;
+    for(let i = 0; i < 2; i++) {
+        let l1 = [];
+        l1[0].x = rs[0][i].x;
+        l1[0].y = rs[0][i].y;
+        l1[1].x = rs[1][i].x;
+        l1[1].y = rs[1][i].y;
+
+        let [gotPoint, p1x, p1y] = findNearestLineCircleIntersectToPoint(l1, c3x, c3y, r3, c1x, c1y, corner);
+        if (gotPoint && i === 0) {
+            found = 1;
+            i1x = p1x;
+            i1y = p1y;
+        }
+        else if (gotPoint && i === 1) {
+            ++found;
+        }
+    }
+    if (found === 2) {
+        // Find the nearest of the two points to c1
+        let dc1x = p1x - c1x;
+        let dc1y = p1y - c1y;
+        let dc1 = dc1x ** 2 + dc1y ** 2;
+        let dc2x = i1x - c1x;
+        let dc2y = i1y - c1y;
+        let dc2 = dc2x ** 2 + dc2y ** 2;
+        if (dc2 < dc1) {
+            p1x = i1x;
+            p1y = i1y;
+            v1 = 0;
+        }
+        else {
+            v1 = 1;
+        }
+    }
+    else if (found === 1) {
+        v1 = 0;
+    }
+    if (found) {
+
+        // Find the position of the circle that intersects p1 and on the same vector as p1 from c1
+        // since the centres of the circles and their radial points form a parallelogram we can simply
+        // adjust the coordinates of the centre accordingly.
+        const c4x = c1x + (p1x - rs[0][v1].x);
+        const c4y = c1y + (p1y - rs[0][v1].y);
+
+        // Adjust position of c4 along the normal from c3 to yield c5
+        // get the normal
+        let n1x = c4x - c3x;
+        let n1y = c4y - c3y;
+        let rd = Math.sqrt(n1x ** 2 + n1y **2)
+        let overlap = r + r3 - rd;
+        let c5x = c4x + overlap * n1y/n1x;
+        let c5y = c4y + overlap * n1x/n1y;
+        let hit = true;
+        return [hit, c5x, c5y];
+    }
+    else return [false, 0, 0];
+}
+
+
+function findNearestLineCircleIntersectToPoint(lineSpec, c3x, c3y, r3, c1x, c1y, corner) {
+    let found = 0;
+    let i1 = lineCircleIntersects(lineSpec, r3, c3x, c3y);
+    if (i1.length != 0) {
+        // Get the range for corner
+        let a1x,a2y,p1x,p1y;
+        switch (corner) {
+            case 0:
+                a1x = c3x - r3;
+                a2y = c3y - r3;
+                break;
+            case 1:
+                a1x = c3x + r3;
+                a2y = c3y - r3;
+                break;
+            case 2:
+                a1x = c3x + r3;
+                a2y = c3y + r3;
+                break;
+            case 3:
+                a1x = c3x - r3;
+                a2y = c3y + r3;
+                break;
+            default:
+                console.log("erroneous corner number", corner);
+                break;
+        }
+        // Determine whether either of the intersects lie on the arc and is nearest to c1
+        for (let j = 0; j < i1.length; j++) {
+            let i1x = i1[j].x;
+            let i1y = i1[j].y;
+            if ((corner === 0 && i1x >= a1x && i1x <= c3x && i1y <= c3y && i1y >= a2y) ||
+                (corner === 1 && i1x <= a1x && i1x >= c3x && i1y <= c3y && i1y >= a2y) ||
+                (corner === 2 && i1x <= a1x && i1x >= c3x && i1y >= c3y && i1y <= a2y) ||
+                (corner === 3 && i1x >= a1x && i1x <= c3x && i1y >= c3y && i1y <= a2y)
+            ){
+                if (i1.length === 1) {
+                    found = 1;
+                    p1x = i1x;
+                    p1y = i1y;
+                }
+                else if (j === 1) {
+                    found = 2;
+                }
+                else {
+                    p1x = i1x;
+                    p1y = i1y;
+                }
+            }
+        }
+        if (found == 2) {
+            // Find the nearest intersect to c1
+            let dc1x = p1x - c1x;
+            let dc1y = p1y - c1y;
+            let dc1 = dc1x ** 2 + dc1y ** 2;
+            let dc2x = i1x - c1x;
+            let dc2y = i1y - c1y;
+            let dc2 = dc2x ** 2 + dc2y ** 2;
+            if (dc2 < dc1) {
+                p1x = i1x;
+                p1y = i1y;
+            }
+        }
+    }
+    return [found, p1x, p1y];
+}

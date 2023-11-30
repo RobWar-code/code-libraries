@@ -213,10 +213,11 @@ export function movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y
 
 function findNearestLineCircleIntersectToPoint(lineSpec, c3x, c3y, r3, c1x, c1y, corner) {
     let found = 0;
+    let p1x, p1y;
     let i1 = lineCircleIntersects(lineSpec, r3, c3x, c3y);
-    if (i1.length != 0) {
+    if (i1.length !== 0) {
         // Get the range for corner
-        let a1x,a2y,p1x,p1y;
+        let a1x,a2y;
         switch (corner) {
             case 0:
                 a1x = c3x - r3;
@@ -239,9 +240,10 @@ function findNearestLineCircleIntersectToPoint(lineSpec, c3x, c3y, r3, c1x, c1y,
                 break;
         }
         // Determine whether either of the intersects lie on the arc and is nearest to c1
+        let i1x, i1y;
         for (let j = 0; j < i1.length; j++) {
-            let i1x = i1[j].x;
-            let i1y = i1[j].y;
+            i1x = i1[j].x;
+            i1y = i1[j].y;
             if ((corner === 0 && i1x >= a1x && i1x <= c3x && i1y <= c3y && i1y >= a2y) ||
                 (corner === 1 && i1x <= a1x && i1x >= c3x && i1y <= c3y && i1y >= a2y) ||
                 (corner === 2 && i1x <= a1x && i1x >= c3x && i1y >= c3y && i1y <= a2y) ||
@@ -261,7 +263,7 @@ function findNearestLineCircleIntersectToPoint(lineSpec, c3x, c3y, r3, c1x, c1y,
                 }
             }
         }
-        if (found == 2) {
+        if (found === 2) {
             // Find the nearest intersect to c1
             let dc1x = p1x - c1x;
             let dc1y = p1y - c1y;

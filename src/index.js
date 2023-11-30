@@ -9,7 +9,8 @@ import Root from "./routes/root";
 import Introduction from "./routes/introduction";
 import LineCircleIntersects from "./routes/line-circle-intersects";
 import CircleIntersects from "./routes/circle-intersects";
-import RadialVectorPoints from "./routes/radial-vector-points.js"
+import RadialVectorPoints from "./routes/radial-vector-points.js";
+import MovingCircleToArcContact from "./routes/moving-circle-to-arc-contact";
 
 const router = createBrowserRouter([
     {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
             {
                 path: "/radial-vector-points",
                 element: <RadialVectorPoints />
+            },
+            {
+                path: "/moving-circle-to-arc-contact",
+                element: <MovingCircleToArcContact />
             }
         ]
     }

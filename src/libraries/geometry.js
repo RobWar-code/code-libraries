@@ -133,7 +133,7 @@ export function radialVectorPoints(cx, cy, r, dx, dy) {
  * @param {number} c3y - centre of circular arc
  * @param {number} r3 - radius of circular arc
  * @param {number} corner - (0 - top-left, 1 - top-right, 2 - bottom-right, 3 - bottom-left)
- * @returns [hit, centreOfContactPosition - c5x, c5y]
+ * @returns [hit, centreOfContactCircle - c5x, c5y, point of contact - p5x, p5y]
  */
 export function movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, r3, corner) {
     // Get the vector between C1, C2
@@ -151,42 +151,49 @@ export function movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y
     // Determine the trajectories and their intersects of C3
     let found = 0;
     let i1x, i1y, p1y, p1x, v1;
+    let rp = [];
     for(let i = 0; i < 2; i++) {
-        let l1 = [];
+        let l1 = [{}, {}];
         l1[0].x = rs[0][i].x;
         l1[0].y = rs[0][i].y;
         l1[1].x = rs[1][i].x;
         l1[1].y = rs[1][i].y;
 
         let [gotPoint, p1x, p1y] = findNearestLineCircleIntersectToPoint(l1, c3x, c3y, r3, c1x, c1y, corner);
-        if (gotPoint && i === 0) {
-            found = 1;
-            i1x = p1x;
-            i1y = p1y;
-        }
-        else if (gotPoint && i === 1) {
+        if (gotPoint) {
+            let h = {};
+            h.p1x = p1x;
+            h.p1y = p1y;
+            h.v1 = i;
+            rp.push(h);
             ++found;
         }
     }
     if (found === 2) {
+        i1x = rp[0].p1x;
+        i1y = rp[0].p1x;
+        p1x = rp[1].p1x;
+        p1y = rp[1].p1y;
         // Find the nearest of the two points to c1
-        let dc1x = p1x - c1x;
-        let dc1y = p1y - c1y;
+        let dc1x = i1x - c1x;
+        let dc1y = i1y - c1y;
         let dc1 = dc1x ** 2 + dc1y ** 2;
-        let dc2x = i1x - c1x;
-        let dc2y = i1y - c1y;
+        let dc2x = p1x - c1x;
+        let dc2y = p1y - c1y;
         let dc2 = dc2x ** 2 + dc2y ** 2;
-        if (dc2 < dc1) {
+        if (dc1 < dc2) {
             p1x = i1x;
             p1y = i1y;
-            v1 = 0;
+            v1 = rp[0].v1;
         }
         else {
-            v1 = 1;
+            v1 = rp[1].v1;
         }
     }
     else if (found === 1) {
-        v1 = 0;
+        p1x = rp[0].p1x;
+        p1y = rp[0].p1y;
+        v1 = rp[0].v1;
     }
     if (found) {
 
@@ -200,14 +207,27 @@ export function movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y
         // get the normal
         let n1x = c4x - c3x;
         let n1y = c4y - c3y;
-        let rd = Math.sqrt(n1x ** 2 + n1y **2)
+        let rd = Math.sqrt(n1x ** 2 + n1y ** 2)
         let overlap = r + r3 - rd;
-        let c5x = c4x + overlap * n1y/n1x;
-        let c5y = c4y + overlap * n1x/n1y;
-        let hit = true;
-        return [hit, c5x, c5y];
+        let c5x = c4x + overlap * n1x/rd;
+        let c5y = c4y + overlap * n1y/rd;
+        let p5x = c5x - r * n1x/rd;
+        let p5y = c5y - r * n1y/rd;
+        // Check whether the point of contact is within the arc
+        if (
+            (corner === 0 && p5x >= c3x - r3 && p5x <= c3x && p5y <= c3y && p5y >= c3y - r3) ||
+            (corner === 1 && p5x >= c3x && p5x < c3x + r3 && p5y <= c3y && p5y >= c3y - r3) ||
+            (corner === 2 && p5x >= c3x && p5x < c3x + r3 && p5y >= c3y && p5y <= c3y + r3) ||
+            (corner === 3 && p5x >= c3x - r3 && p5x <= c3x && p5y >= c3y && p5y <= c3y + r3))
+        {
+            let hit = true;
+            return [hit, c5x, c5y, p5x, p5y];
+        }
+        else {
+            return [false, c5x, c5y, p5x, p5y];
+        }
     }
-    else return [false, 0, 0];
+    else return [false, 0, 0, 0, 0];
 }
 
 
@@ -244,23 +264,22 @@ function findNearestLineCircleIntersectToPoint(lineSpec, c3x, c3y, r3, c1x, c1y,
         for (let j = 0; j < i1.length; j++) {
             i1x = i1[j].x;
             i1y = i1[j].y;
+            console.log("i1x, i1y:", i1x, i1y);
             if ((corner === 0 && i1x >= a1x && i1x <= c3x && i1y <= c3y && i1y >= a2y) ||
                 (corner === 1 && i1x <= a1x && i1x >= c3x && i1y <= c3y && i1y >= a2y) ||
                 (corner === 2 && i1x <= a1x && i1x >= c3x && i1y >= c3y && i1y <= a2y) ||
                 (corner === 3 && i1x >= a1x && i1x <= c3x && i1y >= c3y && i1y <= a2y)
             ){
-                if (i1.length === 1) {
+                if (i1.length === 0 || j === 0 || (j === 1 && found === 0)) {
                     found = 1;
                     p1x = i1x;
                     p1y = i1y;
-                }
-                else if (j === 1) {
-                    found = 2;
+                    console.log("p1x, p1y in test loop", p1x, p1y);
                 }
                 else {
-                    p1x = i1x;
-                    p1y = i1y;
+                    ++found;
                 }
+                
             }
         }
         if (found === 2) {
@@ -277,5 +296,6 @@ function findNearestLineCircleIntersectToPoint(lineSpec, c3x, c3y, r3, c1x, c1y,
             }
         }
     }
+    console.log("found, p1x, p1y", found, p1x, p1y);
     return [found, p1x, p1y];
 }

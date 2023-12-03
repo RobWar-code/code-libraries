@@ -1,6 +1,7 @@
 import {useCallback} from "react";
 import {Container, Row, Col} from "react-bootstrap";
 import {Stage, Graphics} from "@pixi/react";
+import { movingCircleToArcContactPosition } from "../libraries/geometry";
 
 export default function MovingCircleToArcContact() {
     const stageWidth = 600;
@@ -64,6 +65,60 @@ export default function MovingCircleToArcContact() {
         g.lineStyle(2, 0x000040, 1);
 
         drawBat(g, batWidth, batHeight, arcRadius, batX, batY);
+
+        let c1x = batX - batWidth / 2 - 50;
+        let c1y = batY - batHeight / 2 - 20;
+        let r = 8;
+        g.drawCircle(c1x, c1y, r);
+        let c2x = batX - batWidth / 2 + 40;
+        let c2y = batY - batHeight / 2 + 40;
+        g.drawCircle(c2x, c2y, r);
+        let c3x = batX - batWidth / 2 + arcRadius;
+        let c3y = batY - batHeight / 2 + arcRadius;
+        let corner = 0;
+        let [hit, px, py, hx, hy] = movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
+        console.log ("Corner:", corner, " Hit: ", hit);
+        if (hit) {
+            g.drawCircle(px, py, r);
+        }
+
+        c1x = batX + batWidth / 2 + 50;
+        c1y = batY - batHeight / 2 - 20;
+        g.drawCircle(c1x, c1y, r);
+        c2x = batX + batWidth / 2 - 40;
+        c2y = batY - batHeight / 2 + 40;
+        g.drawCircle(c2x, c2y, r);
+        c3x = batX + batWidth / 2 - arcRadius;
+        c3y = batY - batHeight / 2 + arcRadius;
+        corner = 1;
+        [hit, px, py, hx, hy] = movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
+        console.log ("Corner:", corner, " Hit: ", hit);
+        if (hit) {
+            g.drawCircle(px, py, r);
+        }
+
+        c1x = batX + batWidth / 2 + 50;
+        c1y = batY + batHeight / 2 + 20;
+        g.drawCircle(c1x, c1y, r);
+        c2x = batX + batWidth / 2 - 40;
+        c2y = batY + batHeight / 2 - 40;
+        g.drawCircle(c2x, c2y, r);
+        c3x = batX + batWidth / 2 - arcRadius;
+        c3y = batY + batHeight / 2 - arcRadius;
+        corner = 2;
+        [hit, px, py, hx, hy] = movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
+        console.log ("Corner:", corner, " Hit: ", hit);
+        if (hit) {
+            g.drawCircle(px, py, r);
+        }
+
+        /*
+            g.beginFill(0xff0000);
+            g.drawCircle(px, py, 4);
+            g.drawCircle(hx, hy, 4);
+            g.endFill();
+        */
+
     }, [stageWidth, stageHeight]);
 
 

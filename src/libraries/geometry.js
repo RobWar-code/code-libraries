@@ -40,13 +40,43 @@ export function lineCircleIntersects (lineSpec, radius, centreX, centreY) {
     const y1 = m * x1 + baseY;
     const y2 = m * x2 + baseY;
     
-    if (discriminant === 0) {
+    // Determine whether the intersect is within the line segment
+    let do1 = false;
+    if (
+        ((ax <= bx && x1 >= ax && x1 <= bx) ||
+        (ax > bx && x1 <= ax && x1 >= bx)) &&
+        ((ay <= by && y1 >= ay && y1 <= by) ||
+        (ay > by && y1 <= ay && y1 >= by))
+    ) {
+        do1 = true;
+    }
+    let do2 = false;
+    if (discriminant > 0) {
+        if (
+            ((ax <= bx && x2 >= ax && x2 <= bx) ||
+            (ax > bx && x2 <= ax && x2 >= bx)) &&
+            ((ay <= by && y2 >= ay && y2 <= by) ||
+            (ay > by && y2 <= ay && y2 >= by))
+        ) {
+            do2 = true;
+        }
+    }
+    if (discriminant === 0 && do1) {
         // One intersection
         return [{ x: x1, y: y1 }];
     }
 
     // Two intersections
-    return [{ x: x1, y: y1 }, { x: x2, y: y2 }];
+    if (do2 && do1) {
+        return [{ x: x1, y: y1 }, { x: x2, y: y2 }];
+    }
+    else if (do1) {
+        return [{x: x1, y: y1}];
+    }
+    else if (do2) {
+        return [{x: x2, y: y2}];
+    }
+    else return [];
 }
 
 /**
@@ -122,6 +152,39 @@ export function radialVectorPoints(cx, cy, r, dx, dy) {
     return [{x: x1, y: y1}, {x: x2, y: y2}]
 }
 
+/** 
+ * Find the nearest approach of a line to a point.
+ * 
+ * @param {number} ax  - Point of reference
+ * @param {number} ay - Point of reference 
+ * @param {number} lax - line for relative minimum distance
+ * @param {number} lay 
+ * @param {number} lbx 
+ * @param {number} lby 
+ * @returns { closestPoint: { x: cx, y: cy }, distance } 
+ */
+export function findClosestPointAndDistance(ax, ay, lax, lay, lbx, lby) {
+    // Direction vector of the line
+    const dx = lbx - lax;
+    const dy = lby - lay;
+
+    // Vector from A to P (lax, lay)
+    const APx = ax - lax;
+    const APy = ay - lay;
+
+    // Projection of AP onto d
+    const t = (APx * dx + APy * dy) / (dx * dx + dy * dy);
+
+    // Closest point (cx, cy) on the line to (ax, ay)
+    const cx = lax + t * dx;
+    const cy = lay + t * dy;
+
+    // Calculate the distance
+    const distance = Math.sqrt((ax - cx) ** 2 + (ay - cy) ** 2);
+
+    return { closestPoint: { x: cx, y: cy }, distance };
+}
+
 /**
  * 
  * @param {number} c1x - centre of circle 1
@@ -135,7 +198,7 @@ export function radialVectorPoints(cx, cy, r, dx, dy) {
  * @param {number} corner - (0 - top-left, 1 - top-right, 2 - bottom-right, 3 - bottom-left)
  * @returns [hit, centreOfContactCircle - c5x, c5y, point of contact - p5x, p5y]
  */
-export function movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, r3, corner) {
+export function movingCircleToArcContactPosition(g, c1x, c1y, r, c2x, c2y, c3x, c3y, r3, corner) {
     // Get the vector between C1, C2
     const d1x = c2x - c1x;
     const d1y = c2y - c1y;
@@ -143,91 +206,52 @@ export function movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y
     const v1x = d1x / Math.sqrt(d1x ** 2 + d1y ** 2);
     const v1y = d1y / Math.sqrt(d1y ** 2 + d1x ** 2);
 
-    // Get radial vector points
-    let rs = [];
-    rs[0] = radialVectorPoints(c1x, c1y, r, v1x, v1y);
-    rs[1] = radialVectorPoints(c2x, c2y, r, v1x, v1y);
+    // Skimming contact
+    // Find the closest approach to the arc circle along the vector
+    let {closestPoint, distance} = findClosestPointAndDistance(c3x, c3y, c1x, c1y, c2x, c2y);
 
-    // Determine the trajectories and their intersects of C3
-    let found = 0;
-    let i1x, i1y, p1y, p1x, v1;
-    let rp = [];
-    for(let i = 0; i < 2; i++) {
-        let l1 = [{}, {}];
-        l1[0].x = rs[0][i].x;
-        l1[0].y = rs[0][i].y;
-        l1[1].x = rs[1][i].x;
-        l1[1].y = rs[1][i].y;
+    // Check whether the closest point is less than the sum of the radii
+    if (distance > r + r3) {
+        return [false, 0,0,0,0];
+    };
 
-        let [gotPoint, p1x, p1y] = findNearestLineCircleIntersectToPoint(l1, c3x, c3y, r3, c1x, c1y, corner);
-        if (gotPoint) {
-            let h = {};
-            h.p1x = p1x;
-            h.p1y = p1y;
-            h.v1 = i;
-            rp.push(h);
-            ++found;
-        }
+    // Check whether the point on the vector is within circle positions
+    if (
+        (c1x <= c2x && (closestPoint.x < c1x || closestPoint.x > c2x)) ||
+        (c2x < c1x && (closestPoint.x < c2x || closestPoint.x > c1x)) ||
+        (c1y <= c2y && (closestPoint.y < c1y || closestPoint.y > c2y)) ||
+        (c2y < c1y && (closestPoint.y < c2y || closestPoint.y > c1y))
+    ) {
+        return [false, 0,0,0,0];
     }
-    if (found === 2) {
-        i1x = rp[0].p1x;
-        i1y = rp[0].p1x;
-        p1x = rp[1].p1x;
-        p1y = rp[1].p1y;
-        // Find the nearest of the two points to c1
-        let dc1x = i1x - c1x;
-        let dc1y = i1y - c1y;
-        let dc1 = dc1x ** 2 + dc1y ** 2;
-        let dc2x = p1x - c1x;
-        let dc2y = p1y - c1y;
-        let dc2 = dc2x ** 2 + dc2y ** 2;
-        if (dc1 < dc2) {
-            p1x = i1x;
-            p1y = i1y;
-            v1 = rp[0].v1;
-        }
-        else {
-            v1 = rp[1].v1;
-        }
-    }
-    else if (found === 1) {
-        p1x = rp[0].p1x;
-        p1y = rp[0].p1y;
-        v1 = rp[0].v1;
-    }
-    if (found) {
 
-        // Find the position of the circle that intersects p1 and on the same vector as p1 from c1
-        // since the centres of the circles and their radial points form a parallelogram we can simply
-        // adjust the coordinates of the centre accordingly.
-        const c4x = c1x + (p1x - rs[0][v1].x);
-        const c4y = c1y + (p1y - rs[0][v1].y);
+    // Determine the contact circle position along the vector
+    let R = r + r3;
+    let c4x = closestPoint.x - Math.sqrt(R ** 2 - distance ** 2) * v1x;
+    let c4y = closestPoint.y - Math.sqrt(R ** 2 - distance ** 2) * v1y;
 
-        // Adjust position of c4 along the normal from c3 to yield c5
-        // get the normal
-        let n1x = c4x - c3x;
-        let n1y = c4y - c3y;
-        let rd = Math.sqrt(n1x ** 2 + n1y ** 2)
-        let overlap = r + r3 - rd;
-        let c5x = c4x + overlap * n1x/rd;
-        let c5y = c4y + overlap * n1y/rd;
-        let p5x = c5x - r * n1x/rd;
-        let p5y = c5y - r * n1y/rd;
-        // Check whether the point of contact is within the arc
-        if (
-            (corner === 0 && p5x >= c3x - r3 && p5x <= c3x && p5y <= c3y && p5y >= c3y - r3) ||
-            (corner === 1 && p5x >= c3x && p5x < c3x + r3 && p5y <= c3y && p5y >= c3y - r3) ||
-            (corner === 2 && p5x >= c3x && p5x < c3x + r3 && p5y >= c3y && p5y <= c3y + r3) ||
-            (corner === 3 && p5x >= c3x - r3 && p5x <= c3x && p5y >= c3y && p5y <= c3y + r3))
-        {
-            let hit = true;
-            return [hit, c5x, c5y, p5x, p5y];
-        }
-        else {
-            return [false, c5x, c5y, p5x, p5y];
-        }
+    // Determine the contact point
+    let d4x = c3x - c4x;
+    let d4y = c3y - c4y;
+    let v4y = d4y / Math.sqrt(d4x ** 2 + d4y ** 2);
+    let v4x = d4x / Math.sqrt(d4x ** 2 + d4y ** 2);
+    let hx = c4x + v4x * r;
+    let hy = c4y + v4y * r;
+
+    // Check whether the point of contact is within the arc
+    if (
+        (corner === 0 && hx >= c3x - r3 && hx <= c3x && hy <= c3y && hy >= c3y - r3) ||
+        (corner === 1 && hx >= c3x && hx < c3x + r3 && hy <= c3y && hy >= c3y - r3) ||
+        (corner === 2 && hx >= c3x && hx < c3x + r3 && hy >= c3y && hy <= c3y + r3) ||
+        (corner === 3 && hx >= c3x - r3 && hx <= c3x && hy >= c3y && hy <= c3y + r3))
+    {
+        let hit = true;
+        return [hit, c4x, c4y, hx, hy];
     }
-    else return [false, 0, 0, 0, 0];
+    else {
+        return [false, 0, 0, 0, 0];
+    }
+
 }
 
 

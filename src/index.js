@@ -7,6 +7,7 @@ import {
 import "./styles/index.css";
 import Root from "./routes/root";
 import Introduction from "./routes/introduction";
+import FindClosestPointAndDistance from "./routes/find-closest-point-and-distance.js";
 import LineCircleIntersects from "./routes/line-circle-intersects";
 import CircleIntersects from "./routes/circle-intersects";
 import RadialVectorPoints from "./routes/radial-vector-points.js";
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
                 path: "/",
                 element: <Introduction />
             },
+            { 
+                path: "/find-closest-point-and-distance",
+                element: <FindClosestPointAndDistance />
+            }, 
             {
                 path: "/line-circle-intersects",
                 element: <LineCircleIntersects />

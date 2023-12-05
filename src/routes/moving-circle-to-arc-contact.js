@@ -67,16 +67,16 @@ export default function MovingCircleToArcContact() {
         drawBat(g, batWidth, batHeight, arcRadius, batX, batY);
 
         let c1x = batX - batWidth / 2 - 50;
-        let c1y = batY - batHeight / 2 - 20;
+        let c1y = batY - batHeight / 2 + 20;
         let r = 8;
         g.drawCircle(c1x, c1y, r);
         let c2x = batX - batWidth / 2 + 40;
-        let c2y = batY - batHeight / 2 + 40;
+        let c2y = batY - batHeight / 2 - 10;
         g.drawCircle(c2x, c2y, r);
         let c3x = batX - batWidth / 2 + arcRadius;
         let c3y = batY - batHeight / 2 + arcRadius;
         let corner = 0;
-        let [hit, px, py, hx, hy] = movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
+        let [hit, px, py, hx, hy] = movingCircleToArcContactPosition(g, c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
         console.log ("Corner:", corner, " Hit: ", hit);
         if (hit) {
             g.drawCircle(px, py, r);
@@ -91,7 +91,7 @@ export default function MovingCircleToArcContact() {
         c3x = batX + batWidth / 2 - arcRadius;
         c3y = batY - batHeight / 2 + arcRadius;
         corner = 1;
-        [hit, px, py, hx, hy] = movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
+        [hit, px, py, hx, hy] = movingCircleToArcContactPosition(g, c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
         console.log ("Corner:", corner, " Hit: ", hit);
         if (hit) {
             g.drawCircle(px, py, r);
@@ -106,7 +106,7 @@ export default function MovingCircleToArcContact() {
         c3x = batX + batWidth / 2 - arcRadius;
         c3y = batY + batHeight / 2 - arcRadius;
         corner = 2;
-        [hit, px, py, hx, hy] = movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
+        [hit, px, py, hx, hy] = movingCircleToArcContactPosition(g, c1x, c1y, r, c2x, c2y, c3x, c3y, arcRadius, corner);
         console.log ("Corner:", corner, " Hit: ", hit);
         if (hit) {
             g.drawCircle(px, py, r);

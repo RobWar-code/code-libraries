@@ -34,7 +34,8 @@ function Objects({stageWidth, stageHeight}) {
         const lines = [
             [{x: stageWidth / 4, y: stageHeight / 2}, {x: stageWidth * 0.75, y: stageHeight / 2}],
             [{x: stageWidth / 4, y: stageHeight / 2 - 20}, {x: stageWidth * 0.75, y: stageHeight / 2 - 80}],
-            [{x: stageWidth / 4, y: stageHeight / 2 - r + 10}, {x: stageWidth * 0.75, y: stageHeight / 2 - r - 10.5}]
+            [{x: stageWidth / 4, y: stageHeight / 2 - r + 10}, {x: stageWidth * 0.75, y: stageHeight / 2 - r - 10.5}],
+            [{x: stageWidth / 2 - 40, y: 20}, {x: stageWidth / 2 - 20, y: 80}]
         ]
 
         g.clear();

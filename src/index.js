@@ -7,6 +7,7 @@ import {
 import "./styles/index.css";
 import Root from "./routes/root";
 import Introduction from "./routes/introduction";
+import CircleToEdgeContact from "./routes/circle-to-edge-contact";
 import FindClosestPointAndDistance from "./routes/find-closest-point-and-distance.js";
 import LineCircleIntersects from "./routes/line-circle-intersects";
 import CircleIntersects from "./routes/circle-intersects";
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
             {
                 path: "/",
                 element: <Introduction />
+            },
+            {
+                path: "/circle-to-edge-contact",
+                element: <CircleToEdgeContact />
             },
             { 
                 path: "/find-closest-point-and-distance",

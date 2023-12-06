@@ -22,6 +22,7 @@ function NavBar() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto nav">
             <Nav.Link as={Link} to="/">Intro</Nav.Link>
+            <Nav.Link as={Link} to="/circle-to-edge-contact">CircleToEdgeContact</Nav.Link>
             <Nav.Link as={Link} to="/find-closest-point-and-distance">FindClosestPointAndDistance</Nav.Link>
             <Nav.Link as={Link} to="/line-circle-intersects">LineCircleIntersects</Nav.Link>
             <Nav.Link as={Link} to="/circle-intersects">CircleIntersects</Nav.Link>

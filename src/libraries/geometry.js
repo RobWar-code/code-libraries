@@ -198,7 +198,7 @@ export function findClosestPointAndDistance(ax, ay, lax, lay, lbx, lby) {
  * @param {number} corner - (0 - top-left, 1 - top-right, 2 - bottom-right, 3 - bottom-left)
  * @returns [hit, centreOfContactCircle - c5x, c5y, point of contact - p5x, p5y]
  */
-export function movingCircleToArcContactPosition(g, c1x, c1y, r, c2x, c2y, c3x, c3y, r3, corner) {
+export function movingCircleToArcContactPosition(c1x, c1y, r, c2x, c2y, c3x, c3y, r3, corner) {
     // Get the vector between C1, C2
     const d1x = c2x - c1x;
     const d1y = c2y - c1y;
@@ -322,4 +322,63 @@ function findNearestLineCircleIntersectToPoint(lineSpec, c3x, c3y, r3, c1x, c1y,
     }
     console.log("found, p1x, p1y", found, p1x, p1y);
     return [found, p1x, p1y];
+}
+
+/**
+ * Find the position of the circle as it strikes the edge
+ * 
+ * @param {number} c1x - circle last position
+ * @param {*} c1y - circle last position
+ * @param {*} r - radius of circle
+ * @param {*} c2x - circle new position
+ * @param {*} c2y - circle new position
+ * @param {*} lax - edge coordinate
+ * @param {*} lay 
+ * @param {*} lbx 
+ * @param {*} lby 
+ * @param {number} edgeNum - (0 left, 1 top, 2 right, 3 bottom)
+ */
+export function circleToEdgeContact(c1x, c1y, r, c2x, c2y, lax, lay, lbx, lby, edgeNum) {
+
+    let dx = c2x - c1x;
+    let dy = c2y - c1y;
+    let ix, iy;
+    let px, py;
+    let cpx, cpy, c3x, c3y;
+    let found = false;
+
+    if (edgeNum === 0 || edgeNum === 2) {
+        // Get intersect between circle and edge on the trajectory
+        // we have x for the edge, so we put
+        ix = lax;
+        iy = c1y + (ix - c1x) * dy/dx;
+        // Determine the circle centre on the c1c2 vector that is r from the edge
+        // Point of contact:
+        cpy = Math.abs(r * dy/dx);
+        py = iy - cpy * Math.sign(dy);
+        px = lax;
+        c3x = px - r * Math.sign(dx);
+        c3y = py;
+    }
+    else {
+        iy = lay;
+        ix = c1x + (iy - c1y) * dx/dy;
+        // Determine the circle centre on the c1c2 vector that is r from the edge
+        // Point of contact:
+        cpx = Math.abs(r * dx/dy);
+        px = ix - cpx * Math.sign(dx);
+        py = lay;
+        c3y = py - r * Math.sign(dx);
+        c3x = px;
+    }
+
+    if (
+        ((lax <= lbx && px >= lax && px <= lbx) ||
+        (lax > lbx && px <= lax && px >= lbx)) &&
+        ((lay <= lby && py >= lay && py <= lby) ||
+        (lay > lby && py <= lay && py >= lby))
+    ) {
+      found = true;  
+    }
+    return [found, c3x, c3y, px, py]
 }

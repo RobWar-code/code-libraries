@@ -1,13 +1,18 @@
 import {Container, Row, Col} from 'react-bootstrap';
+import IntroNavBar from '../components/IntroNavBar';
 
-export default function Introduction () {
+
+export default function Introduction() {
     return (
-        <Container>
-            <Row>
-                <Col>
-                    <h1>Code Libraries</h1>
-                </Col>
-            </Row>
-        </Container>
+        <>
+            <IntroNavBar />
+            <Container>
+                <Row>
+                    <Col>
+                        <h1>Geometry and Pixi-SVG Library Functions</h1>
+                    </Col>
+                </Row>
+            </Container>
+        </>
     )
 }

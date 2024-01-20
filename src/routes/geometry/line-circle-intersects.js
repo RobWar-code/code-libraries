@@ -1,7 +1,7 @@
 import {useCallback} from 'react';
 import {Container, Row, Col} from 'react-bootstrap';
 import {Stage, Graphics} from '@pixi/react';
-import { lineCircleIntersects } from '../libraries/geometry';
+import { lineCircleIntersects } from '../../libraries/geometry';
 
 export default function LineCircleIntersects() {
     const stageWidth = 600;

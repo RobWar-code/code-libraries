@@ -382,3 +382,19 @@ export function circleToEdgeContact(c1x, c1y, r, c2x, c2y, lax, lay, lbx, lby, e
     }
     return [found, c3x, c3y, px, py]
 }
+
+export const rotatePoint = (px, py, mx, my, a) => {
+    // Translate point to origin
+    let translatedX = px - mx;
+    let translatedY = py - my;
+
+    // Rotate point
+    let rotatedX = translatedX * Math.cos(a) - translatedY * Math.sin(a);
+    let rotatedY = translatedX * Math.sin(a) + translatedY * Math.cos(a);
+
+    // Translate point back
+    let finalX = rotatedX + mx;
+    let finalY = rotatedY + my;
+
+    return { x: finalX, y: finalY };
+}

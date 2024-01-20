@@ -1,7 +1,7 @@
 import {useCallback} from 'react';
 import {Container, Row, Col} from 'react-bootstrap';
 import {Stage, Graphics} from '@pixi/react';
-import {radialVectorPoints} from '../libraries/geometry';
+import {radialVectorPoints} from '../../libraries/geometry';
 
 export default function RadialVectorPoints () {
     const stageWidth=600;

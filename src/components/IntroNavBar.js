@@ -4,7 +4,7 @@ import {Link} from 'react-router-dom';
 import Navbar from 'react-bootstrap/Navbar';
 import Logo from '../assets/images/logo.png'
 
-function NavBar() {
+function IntroNavBar() {
   return (
     <Navbar expand="sm" className="bg-body-tertiary">
       <Container>
@@ -22,12 +22,8 @@ function NavBar() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto nav">
             <Nav.Link as={Link} to="/">Intro</Nav.Link>
-            <Nav.Link as={Link} to="/circle-to-edge-contact">CircleToEdgeContact</Nav.Link>
-            <Nav.Link as={Link} to="/find-closest-point-and-distance">FindClosestPointAndDistance</Nav.Link>
-            <Nav.Link as={Link} to="/line-circle-intersects">LineCircleIntersects</Nav.Link>
-            <Nav.Link as={Link} to="/circle-intersects">CircleIntersects</Nav.Link>
-            <Nav.Link as={Link} to="/radial-vector-points">RadialVectorPoints</Nav.Link>
-            <Nav.Link as={Link} to="/moving-circle-to-arc-contact">MovingCircleToArcContact</Nav.Link>
+            <Nav.Link as={Link} to="/geometry">Geometry</Nav.Link>
+            <Nav.Link as={Link} to="/pixi-svg">Pixi-SVG</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>
@@ -35,4 +31,4 @@ function NavBar() {
   );
 }
 
-export default NavBar;
+export default IntroNavBar;

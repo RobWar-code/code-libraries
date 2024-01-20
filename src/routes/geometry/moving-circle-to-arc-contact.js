@@ -1,7 +1,7 @@
 import {useCallback} from "react";
 import {Container, Row, Col} from "react-bootstrap";
 import {Stage, Graphics} from "@pixi/react";
-import { movingCircleToArcContactPosition } from "../libraries/geometry";
+import { movingCircleToArcContactPosition } from "../../libraries/geometry";
 
 export default function MovingCircleToArcContact() {
     const stageWidth = 600;

@@ -1,7 +1,7 @@
 import {useCallback} from "react";
 import {Container, Row, Col} from "react-bootstrap";
 import {Stage, Graphics} from "@pixi/react";
-import { circleToEdgeContact } from '../libraries/geometry';
+import { circleToEdgeContact } from '../../libraries/geometry';
 
 export default function CircleToEdgeContact() {
     const stageWidth = 600;

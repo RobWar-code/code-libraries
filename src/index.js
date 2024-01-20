@@ -7,12 +7,18 @@ import {
 import "./styles/index.css";
 import Root from "./routes/root";
 import Introduction from "./routes/introduction";
-import CircleToEdgeContact from "./routes/circle-to-edge-contact";
-import FindClosestPointAndDistance from "./routes/find-closest-point-and-distance.js";
-import LineCircleIntersects from "./routes/line-circle-intersects";
-import CircleIntersects from "./routes/circle-intersects";
-import RadialVectorPoints from "./routes/radial-vector-points.js";
-import MovingCircleToArcContact from "./routes/moving-circle-to-arc-contact";
+
+import GeoRoot from "./routes/geometry/geo-root";
+import GeoIntro from "./routes/geometry/geo-intro";
+import CircleToEdgeContact from "./routes/geometry/circle-to-edge-contact";
+import FindClosestPointAndDistance from "./routes/geometry/find-closest-point-and-distance.js";
+import LineCircleIntersects from "./routes/geometry/line-circle-intersects";
+import CircleIntersects from "./routes/geometry/circle-intersects";
+import RadialVectorPoints from "./routes/geometry/radial-vector-points.js";
+import MovingCircleToArcContact from "./routes/geometry/moving-circle-to-arc-contact";
+
+import SVGRoot from "./routes/pixi-svg/svg-root";
+import SVGIntro from "./routes/pixi-svg/svg-intro"
 
 const router = createBrowserRouter([
     {
@@ -24,28 +30,49 @@ const router = createBrowserRouter([
                 element: <Introduction />
             },
             {
-                path: "/circle-to-edge-contact",
-                element: <CircleToEdgeContact />
+                path: "/geometry",
+                element: <GeoRoot />,
+                children: [
+                    {
+                        path: "/geometry",
+                        element: <GeoIntro />
+                    },
+                    {
+                        path: "/geometry/circle-to-edge-contact",
+                        element: <CircleToEdgeContact />
+                    },
+                    { 
+                        path: "/geometry/find-closest-point-and-distance",
+                        element: <FindClosestPointAndDistance />
+                    }, 
+                    {
+                        path: "/geometry/line-circle-intersects",
+                        element: <LineCircleIntersects />
+                    },
+                    {
+                        path: "/geometry/circle-intersects",
+                        element: <CircleIntersects />
+                    },
+                    {
+                        path: "/geometry/radial-vector-points",
+                        element: <RadialVectorPoints />
+                    },
+                    {
+                        path: "/geometry/moving-circle-to-arc-contact",
+                        element: <MovingCircleToArcContact />
+                    }
+                ]
             },
-            { 
-                path: "/find-closest-point-and-distance",
-                element: <FindClosestPointAndDistance />
-            }, 
             {
-                path: "/line-circle-intersects",
-                element: <LineCircleIntersects />
-            },
-            {
-                path: "/circle-intersects",
-                element: <CircleIntersects />
-            },
-            {
-                path: "/radial-vector-points",
-                element: <RadialVectorPoints />
-            },
-            {
-                path: "/moving-circle-to-arc-contact",
-                element: <MovingCircleToArcContact />
+                path: "/pixi-svg",
+                element: <SVGRoot />,
+                children: [
+                    {
+                        path: "/pixi-svg",
+                        element: <SVGIntro />
+                    }
+
+                ]
             }
         ]
     }

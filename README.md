@@ -52,7 +52,7 @@ primarily concerned with circle geometry.
 The pixi-svg functions are concerned with the conversion of
 inkscape svg drawing files to objects which can then be processed
 by the graphic functions using the @pixi/react Graphics procedures
-onto a <Stage> element.
+onto a <Stage> element. These are CONVERSION and PLOTTING functions.
 
 
 ### Conversion Functions
@@ -62,10 +62,57 @@ files from site-local server files using a standardised json
 "shopping list" which is read first from the given site-local file.
 
 The functions are encapsulated in components
-Component: <SVGConvert SVGObject={SVGObject} shoppingList={shoppingListFile}>
+Component: 
+
+```js
+// JSON shoppingList
+[
+    {
+        fileName: "abcd.svg",
+        handle: "mygraphic"
+    },
+    ..
+]
+
+// Usage
+import {useState} from 'react';
+import SVGConvert from '../libraries/SVGConversion';
+
+const [SVGObject, setSVGObject] = useState([]);
+
+// JSX
+<App>
+
+    <SVGConvert 
+        SVGObject={SVGObject} 
+        shoppingList="shoppingListFile" 
+        pathToFiles="pathToFiles" />
+    <Outlet context={[SVGObject, setSVGObject]} />
+
+</App>
+```
+
+The SVGObject is an array of objects which contains the reference handles of the file 
+data with the graphical data for the drawing as an array of objects.
+
+When converting the node coordinates, a final parse is made to adjust them to be based
+on the upper and left-most coordinates in the data as 0,0.
 
 
-### Schedule
+### Plotting the SVGs
+
+Having obtained the SVG data and converted it to an SVGObject, the SVGPlotter function
+is used as follows to plot the graphic
+
+```js
+ // The handle is the name of the graphic derived from the original JSON file
+ // g is the @pixi/react graphics object
+ // anchor operates in the same way as @pixi/react image sprite anchor.
+ SVGPlotter(handle, g, x, y, anchor, scale);
+```
+## Schedule
+
+Start Date: 20/01/2024
 
 | Task                            | Est. Time | Actual     |
 | ------------------------------- | --------- | ---------- |

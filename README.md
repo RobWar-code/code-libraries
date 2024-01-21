@@ -98,6 +98,44 @@ data with the graphical data for the drawing as an array of objects.
 When converting the node coordinates, a final parse is made to adjust them to be based
 on the upper and left-most coordinates in the data as 0,0.
 
+The svg object has the following format:
+
+```js
+    [
+        {
+            handle: "mySVG",
+            width: ,
+            height: ,
+            paths: [
+                {
+                    fill: none or 0xnnnnnn,
+                    stroke: none or 0xnnnnnn,
+                    stroke_width: 0.263935,
+                    stroke_linecap: butt,
+                    stroke_linejoin: mitre or butt,
+                    stroke_miterlimit: 4, 
+                    stroke_dasharray_w: 0.263935, 
+                    stroke_dasharray_h: 0.263935,
+                    stroke_dashoffset:0,
+                    stroke_opacity:1,
+                    nodes: [
+                        {
+                            type: curve or line,
+                            curve_param_1: 0.3,
+                            curve_param_2: 0.4,
+                            x: 30.0,
+                            y: 50.0
+                        }
+                    ]
+                }
+
+            ]
+        }
+    ]
+```
+
+Note that the coordinates are direct translation of inkscape mm to pixels, 
+the scale can be set by the plotting functions.
 
 ### Plotting the SVGs
 
@@ -108,7 +146,7 @@ is used as follows to plot the graphic
  // The handle is the name of the graphic derived from the original JSON file
  // g is the @pixi/react graphics object
  // anchor operates in the same way as @pixi/react image sprite anchor.
- SVGPlotter(handle, g, x, y, anchor, scale);
+ svgPlotter(handle, g, x, y, anchor, scale);
 ```
 ## Schedule
 

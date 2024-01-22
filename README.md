@@ -61,7 +61,9 @@ The conversion functions (svg to object conversion) obtain the svg
 files from site-local server files using a standardised json 
 "shopping list" which is read first from the given site-local file.
 
-The functions are encapsulated in components
+The functions are encapsulated in components in the libraries directory
+all the svg files must be placed in the public folder of the app.
+
 Component: 
 
 ```js
@@ -78,22 +80,27 @@ Component:
 import {useState} from 'react';
 import SVGConvert from '../libraries/SVGConversion';
 
-const [SVGObject, setSVGObject] = useState([]);
+const [svgObject, setSvgObject] = useState([]);
 
 // JSX
 <App>
 
     <SVGConvert 
-        SVGObject={SVGObject} 
-        shoppingList="shoppingListFile" 
-        pathToFiles="pathToFiles" />
-    <Outlet context={[SVGObject, setSVGObject]} />
+        svgObject={svgObject} 
+        shoppingList={"shoppingListFile"} 
+        pathToFiles={"pathToFiles"} />
+    <Outlet context={[svgObject, setSvgObject]} />
 
 </App>
 ```
 
-The SVGObject is an array of objects which contains the reference handles of the file 
+The svgObject is an array of objects which contains the reference handles of the file 
 data with the graphical data for the drawing as an array of objects.
+
+The shoppingList is the name of the json file that contains the list of files to be
+parsed.
+
+pathToFiles is the path of the files within the public directory. ie: "/static/svg/"
 
 When converting the node coordinates, a final parse is made to adjust them to be based
 on the upper and left-most coordinates in the data as 0,0.
@@ -108,19 +115,22 @@ The svg object has the following format:
             height: ,
             paths: [
                 {
+                    closed: true,
                     fill: none or 0xnnnnnn,
                     stroke: none or 0xnnnnnn,
                     stroke_width: 0.263935,
-                    stroke_linecap: butt,
-                    stroke_linejoin: mitre or butt,
+                    stroke_linecap: butt or round or square,
+                    stroke_linejoin: mitre or round or bevel,
                     stroke_miterlimit: 4, 
                     stroke_dasharray_w: 0.263935, 
                     stroke_dasharray_h: 0.263935,
                     stroke_dashoffset:0,
                     stroke_opacity:1,
+                    fill_opacity: 1,
+                    opacity: 0.5,
                     nodes: [
                         {
-                            type: curve or line,
+                            type: curve or line segment,
                             curve_param_1: 0.3,
                             curve_param_2: 0.4,
                             x: 30.0,
@@ -134,12 +144,14 @@ The svg object has the following format:
     ]
 ```
 
-Note that the coordinates are direct translation of inkscape mm to pixels, 
-the scale can be set by the plotting functions.
+Note that the coordinates are a direct translation of inkscape mm to pixels, 
+the scale can be set by the plotting functions. All coordinates in the
+object are absolute, so these are calculated from relative coordinates
+in the svg source.
 
 ### Plotting the SVGs
 
-Having obtained the SVG data and converted it to an SVGObject, the SVGPlotter function
+Having obtained the SVG data and converted it to an SVGObject, the svgPlotter function
 is used as follows to plot the graphic
 
 ```js

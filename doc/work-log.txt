@@ -6,6 +6,16 @@ Contents
 
 <h1>Work Due
 
+    * Create the JSON shopping list
+
+    Create the fetch/convert component
+
+    Do the JSON File Fetch and Parse
+
+<h1>Work Done
+
+    22/01/2024
+
     * Design the library display layout
 
     * Design the library file layout 
@@ -19,5 +29,3 @@ Contents
     * Do SVGIntro
 
     * Do SVGNavBar
-
-<h1>Work Done

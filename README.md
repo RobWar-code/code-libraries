@@ -86,9 +86,11 @@ const [svgObject, setSvgObject] = useState([]);
 <App>
 
     <SVGConvert 
+        fileList={"fileListFile.json"} 
+        pathToFiles={"pathToFiles"}
         svgObject={svgObject} 
-        shoppingList={"shoppingListFile"} 
-        pathToFiles={"pathToFiles"} />
+        setSvgObject={setSvgObject}
+    />
     <Outlet context={[svgObject, setSvgObject]} />
 
 </App>
@@ -97,7 +99,7 @@ const [svgObject, setSvgObject] = useState([]);
 The svgObject is an array of objects which contains the reference handles of the file 
 data with the graphical data for the drawing as an array of objects.
 
-The shoppingList is the name of the json file that contains the list of files to be
+The fileList is the name of the json file that contains the list of files to be
 parsed.
 
 pathToFiles is the path of the files within the public directory. ie: "/static/svg/"

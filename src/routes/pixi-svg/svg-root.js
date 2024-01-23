@@ -6,12 +6,12 @@ import SVGNavBar from '../../components/SVGNavBar';
 import SVGConvert from '../../libraries/SVGConvert';
 
 export default function SVGRoot() {
-    const [svgFileList, setSvgFileList] = useState([]);
+    const [svgObject, setSvgObject] = useState([]);
 
     return (
         <>
         <SVGNavBar />
-        <SVGConvert svgFilePath={"/static/svg/"} svgFileList={svgFileList} setSvgFileList={setSvgFileList} />
+        <SVGConvert svgFileList={"svg-list.json"} svgFilePath={"/static/svg/"} svgObject={svgObject} setSvgObject={setSvgObject}/>
         <div id="detail">
             <Outlet />
         </div>

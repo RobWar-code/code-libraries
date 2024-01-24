@@ -85,7 +85,13 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
   useEffect( () => {
 
     const processSvgData = () => {
-      let outputObj = [];
+      let pathArray = [];
+      let outputObj = {};
+      let minX = 0;
+      let minY = 0;
+      let maxX = 0;
+      let maxY = 0;
+      let pathCount = 0;
       // Split svgData into lines
       const svgArray = svgData.current.split("\n");
       // Parse each line
@@ -109,15 +115,31 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
               let s = line.substring(p + 1, line.length);
               p = s.indexOf("\"");
               let nodeLine = s.substring(0, p);
-              let nodeArray = processNodeLine(nodeLine);
+              let [closed, minX1, minY1, maxX1, maxY1, nodeArray] = processNodeLine(nodeLine);
+              console.log("minX1, minY1:", minX1, minY1);
+              if (pathCount === 0) {
+                minX = minX1;
+                minY = minY1;
+                maxX = maxX1;
+                maxY = maxY1;
+              }
+              else {
+                if (minX1 < minX) minX = minX1;
+                if (minY1 < minY) minY = minY1;
+                if (maxX1 > maxX) maxX = maxX1;
+                if (maxY1 > maxY) maxY = maxY1;
+              }
+              styleObj.closed = closed;
               styleObj.nodes = nodeArray;
             }
-            outputObj.push(styleObj);
+            ++pathCount;
+            pathArray.push(styleObj);
           }
         }
       }
-
-      console.log("Style Objects:", outputObj);
+      // Adjust the path nodes to scale and origin
+      pathArray = adjustNodes(minX, minY, pathArray);
+      console.log("pathArray", pathArray);
     }
 
     const processStyleLine = (styleLine) => {
@@ -142,15 +164,167 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
     const processNodeLine = (nodeLine) => {
       let nodeArray = [];
       let nodeList = nodeLine.split(" ");
-      let firstNode = true;
+      let startOfNodes = true;
+      let minX = 0;
+      let minY = 0;
+      let maxX = 0;
+      let maxY = 0;
+      let linkType = "";
+      let node = {};
+      let closed = false;
       for (let i = 0; i < nodeList.length; i++) {
+        let lastNode = {}
+        lastNode = {...node};
+        node = {};
+        let gotFlag = false;
         let coords = nodeList[i].split(",");
         // Process directive tags
-        if (coords.length == 1) {
-          
+        if (coords.length === 1) {
+          let flag = coords[0];
+          gotFlag = true;
+          switch (flag) {
+            case "C":
+              linkType = "CurveAbs";
+              break;
+            case "c":
+              linkType = "CurveRel";
+              break;
+            case "H":
+              linkType = "HorizontalAbs";
+              break;
+            case "h":
+              linkType = "HorizontalRel";
+              break;
+            case "L":
+              linkType = "LineAbs";
+              break;
+            case "l":
+              linkType = "LineRel";
+              break;
+            case "M":
+              linkType = "MoveAbs";
+              break;
+            case "m":
+              linkType = "MoveRel";
+              break;
+            case "V":
+              linkType = "VerticalAbs";
+              break;
+            case "v":
+              linkType = "VerticalRel";
+              break;
+            case "Z":
+              linkType = "Close";
+              break;
+            case "z":
+              linkType = "Close";
+              break;
+            default:
+              console.log("Problem with data in svg path");
+              break;
+          }
+          if (linkType !== "Close") {
+            coords = nodeList[++i].split(",");
+          }
+        }
+        if (linkType !== "Close") {
+          // Singleton Node (H or V)
+          if (linkType === "HorizontalAbs") {
+            node.x = parseFloat(coords[0]);
+            node.y = lastNode.y;
+          }
+          else if (linkType === "HorizontalRel") {
+            node.x = parseFloat(coords[0]) + lastNode.x;
+            node.y = lastNode.y; 
+          }
+          else if (linkType === "VerticalAbs") {
+            node.x = lastNode.x;
+            node.y = lastNode.y;
+          }
+          else if (linkType === "VerticalRel") {
+            node.x = lastNode.x;
+            node.y = lastNode.y + parseFloat(coords[0]);
+          }
+          // Start of absolute nodes
+          else if (linkType === "MoveAbs" || (startOfNodes && linkType === "MoveRel")) {
+            node.x = parseFloat(coords[0]);
+            node.y = parseFloat(coords[1]);
+          }
+          else if (linkType === "MoveRel") {
+            node.x = lastNode.x + parseFloat(coords[0]);
+            node.y = lastNode.y + parseFloat(coords[1]);
+          }
+          else if (linkType === "LineAbs") {
+            node.x = parseFloat(coords[0]);
+            node.y = parseFloat(coords[1]);
+          }
+          else if (linkType === "LineRel") {
+            node.x = lastNode.x + parseFloat(coords[0]);
+            node.y = lastNode.y + parseFloat(coords[1]);
+          }
+          // Curves
+          else if (linkType === "CurveAbs") {
+            node.curveParam1x = parseFloat(coords[0]);
+            node.curveParam1y = parseFloat(coords[1]);
+            coords = nodeList[++i].split(",");
+            node.curveParam2x = parseFloat(coords[0]);
+            node.curveParam2y = parseFloat(coords[1]);
+            coords = nodeList[++i].split(",");
+            node.x = parseFloat(coords[0]);
+            node.y = parseFloat(coords[1]);
+          }
+          else if (linkType === "CurveRel") {
+            node.curveParam1x = parseFloat(coords[0]) + lastNode.x;
+            node.curveParam1y = parseFloat(coords[1]) + lastNode.y;
+            coords = nodeList[++i].split(",");
+            node.curveParam2x = parseFloat(coords[0]) + lastNode.x;
+            node.curveParam2y = parseFloat(coords[0]) + lastNode.y;
+            coords = nodeList[++i].split(",");
+            node.x = parseFloat(coords[0]) + lastNode.x;
+            node.y = parseFloat(coords[1]) + lastNode.y;
+          }
+          nodeArray.push(node);
+          if (startOfNodes) {
+            minX = node.x;
+            minY = node.y;
+            maxX = node.x;
+            maxY = node.y;
+          }
+          else {
+            if (node.x < minX) minX = node.x;
+            if (node.x > maxX) maxX = node.x;
+            if (node.y < minY) minY = node.y;
+            if (node.y > maxY) maxY = node.y;
+          }
+        }
+        else {
+          closed = true;
+          break;
+        }
+        startOfNodes = false;
+      }
+      return [closed, minX, minY, maxX, maxY, nodeArray];
+    }
+
+    const adjustNodes = (minX, minY, pathArray) => {
+      const scale = 2;
+      // For each path
+      for (let i = 0; i < pathArray.length; i++) {
+        // Adjust the nodes to the effective zero origin and rescale
+        let nodeArray = pathArray[i].nodes;
+        for (let j = 0; j < nodeArray.length; j++) {
+          let node = nodeArray[j];
+          pathArray[i].nodes[j].x = (node.x - minX) * scale;
+          pathArray[i].nodes[j].y = (node.y - minY) * scale;
+          if ("curveParam1x" in node) {
+            pathArray[i].nodes[j].curveParam1x = (node.curveParam1x - minX) * scale;
+            pathArray[i].nodes[j].curveParam1y = (node.curveParam1y - minY) * scale;
+            pathArray[i].nodes[j].curveParam2x = (node.curveParam2x - minX) * scale;
+            pathArray[i].nodes[j].curveParam2y = (node.curveParam2y - minY) * scale;
+          }
         }
       }
-
+      return pathArray;
     }
 
     const hexCharToInt = (s) => {

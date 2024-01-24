@@ -6,5 +6,9 @@
 	{
 		"handle": "line-styles",
 		"file": "line-styles.svg"
+	},
+	{
+		"handle": "square",
+		"file": "square.svg"
 	}
 ]

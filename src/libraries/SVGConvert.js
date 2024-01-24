@@ -94,12 +94,24 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         // Identify path
         if (line.indexOf("<path") !== -1) {
           line = svgArray[++i];
+          // Get styles
           if (line.indexOf("style=")) {
             let p = line.indexOf("\"");
             let s = line.substring(p + 1, line.length);
             p = s.indexOf("\"");
             let styleLine = s.substring(0, p);
             let styleObj = processStyleLine(styleLine);
+          
+            // Get Nodes
+            line = svgArray[++i];
+            if (line.indexOf("d=\"") !== -1) {
+              p = line.indexOf("\"");
+              let s = line.substring(p + 1, line.length);
+              p = s.indexOf("\"");
+              let nodeLine = s.substring(0, p);
+              let nodeArray = processNodeLine(nodeLine);
+              styleObj.nodes = nodeArray;
+            }
             outputObj.push(styleObj);
           }
         }
@@ -125,6 +137,20 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         styleObj[itemName] = itemValue;
       }
       return styleObj;
+    }
+
+    const processNodeLine = (nodeLine) => {
+      let nodeArray = [];
+      let nodeList = nodeLine.split(" ");
+      let firstNode = true;
+      for (let i = 0; i < nodeList.length; i++) {
+        let coords = nodeList[i].split(",");
+        // Process directive tags
+        if (coords.length == 1) {
+          
+        }
+      }
+
     }
 
     const hexCharToInt = (s) => {

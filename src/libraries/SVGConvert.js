@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 
 
+/* 
+The SVGConvert component reads in the svgFileList and then scans the listed
+svg files to convert them into an array of objects to be used by the svgPlot
+function to create programmer defined graphic objects on a Stage component
+
+The routine is an event driven parser that reads the json file list entry by
+triggering a parser effect to process each file, one at a time.
+
+*/
 export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgObject}) {
   const [fileLoading, setFileLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,6 +20,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
   const filePath = useRef(svgFilePath);
   const listFile = useRef(svgFileList);
   const svgData = useRef("");
+  const lastSvgHandle = useRef("");
 
   // Get the svg file list
   useEffect(() => {
@@ -47,6 +57,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
     const fetchSvgData = async () => {
       try {
         const fileName = fileJsonData.current[fileNum.current].file;
+        lastSvgHandle.current = fileJsonData.current[fileNum.current].handle;
         const fileListPath = filePath.current + fileName;
         console.log("fileListPath:", fileListPath);
         const response = await fetch(fileListPath, {
@@ -75,8 +86,13 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
     }
 
     if (fetchNext) {
-      setFileLoading(true);
-      fetchSvgData();
+      if (fileNum.current < fileJsonData.current.length) {
+        setFileLoading(true);
+        fetchSvgData();
+      }
+      else {
+        setFetchNext(false);
+      }
     }
 
   }, [fetchNext])
@@ -86,19 +102,25 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
 
     const processSvgData = () => {
       let pathArray = [];
-      let outputObj = {};
       let minX = 0;
       let minY = 0;
       let maxX = 0;
       let maxY = 0;
       let pathCount = 0;
+      let gotPathSet = false;
       // Split svgData into lines
       const svgArray = svgData.current.split("\n");
       // Parse each line
       for (let i = 0; i < svgArray.length; i++) {
         let line = svgArray[i];
+        if (line.indexOf("<g") !== -1) {
+          gotPathSet = true;
+        }
+        else if (line.indexOf("</g>") !== -1) {
+          gotPathSet = false;
+        }
         // Identify path
-        if (line.indexOf("<path") !== -1) {
+        if (line.indexOf("<path") !== -1 && gotPathSet) {
           line = svgArray[++i];
           // Get styles
           if (line.indexOf("style=")) {
@@ -116,7 +138,6 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
               p = s.indexOf("\"");
               let nodeLine = s.substring(0, p);
               let [closed, minX1, minY1, maxX1, maxY1, nodeArray] = processNodeLine(nodeLine);
-              console.log("minX1, minY1:", minX1, minY1);
               if (pathCount === 0) {
                 minX = minX1;
                 minY = minY1;
@@ -139,7 +160,9 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       }
       // Adjust the path nodes to scale and origin
       pathArray = adjustNodes(minX, minY, pathArray);
-      console.log("pathArray", pathArray);
+      let width = maxX - minX + 1;
+      let height = maxY - minY + 1;
+      return [pathArray, width, height];
     }
 
     const processStyleLine = (styleLine) => {
@@ -176,12 +199,10 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         let lastNode = {}
         lastNode = {...node};
         node = {};
-        let gotFlag = false;
         let coords = nodeList[i].split(",");
         // Process directive tags
         if (coords.length === 1) {
           let flag = coords[0];
-          gotFlag = true;
           switch (flag) {
             case "C":
               linkType = "CurveAbs";
@@ -348,12 +369,20 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         return value;
     }
 
+    let svgItem = {};
+
     if (processSvg) {
-      processSvgData();
+      const [pathArray, width, height] = processSvgData();
+      svgItem.handle = lastSvgHandle.current;
+      svgItem.width = width;
+      svgItem.height = height;
+      svgItem.paths = pathArray;
+      setSvgObject( prevSvgObject => [...prevSvgObject, svgItem] );
       setProcessSvg(false);
+      setFetchNext(true);
     }
 
-  }, [processSvg])
+  }, [processSvg, setSvgObject])
 
 
   return (
@@ -365,9 +394,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         <div>Error: {error}</div>
       ) : (
         <div>
-          <p>Data Loaded</p>
-          {/* Render your data here */}
-          <pre>{svgData.current}</pre>
+          <p>Svg Data Loaded</p>
         </div>
       )
     )}

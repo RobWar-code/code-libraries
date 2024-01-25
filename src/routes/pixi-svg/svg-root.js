@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {
     Outlet
 } from "react-router-dom";
@@ -7,6 +7,10 @@ import SVGConvert from '../../libraries/SVGConvert';
 
 export default function SVGRoot() {
     const [svgObject, setSvgObject] = useState([]);
+
+    useEffect (() => {
+        console.log("svgObject:", svgObject);
+    }, [svgObject]);
 
     return (
         <>

@@ -6,13 +6,35 @@ Contents
 
 <h1>Work Due
 
-    * Create the JSON shopping list
+    * Include documentation comments in the conversion component.
 
-    Create the fetch/convert component
+    Remove unwanted console logging
 
-    Do the JSON File Fetch and Parse
+    Study Pixi-JS to see what additional graphics features are
+    available.
+
+    Checkout the README for additional notes on svgPlot
+
+    Plan-out the svgPlot function
+
+    Write the svgPlot Function
+
+    Prepare sample svg graphics
+
+    Set up an example stage component to use the graphics.
+
+    Test the utility
+
 
 <h1>Work Done
+
+    25/01/2024
+
+    * Create the JSON shopping list
+
+    * Create the fetch/convert component
+
+    * Do the JSON File Fetch and Parse
 
     22/01/2024
 

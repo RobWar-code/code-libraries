@@ -18,7 +18,8 @@ import RadialVectorPoints from "./routes/geometry/radial-vector-points.js";
 import MovingCircleToArcContact from "./routes/geometry/moving-circle-to-arc-contact";
 
 import SVGRoot from "./routes/pixi-svg/svg-root";
-import SVGIntro from "./routes/pixi-svg/svg-intro"
+import SVGIntro from "./routes/pixi-svg/svg-intro";
+import SVGExamples from "./routes/pixi-svg/svg-examples";
 
 const router = createBrowserRouter([
     {
@@ -70,6 +71,10 @@ const router = createBrowserRouter([
                     {
                         path: "/pixi-svg",
                         element: <SVGIntro />
+                    },
+                    {
+                        path: "/pixi-svg/svg-examples",
+                        element: <SVGExamples />
                     }
 
                 ]

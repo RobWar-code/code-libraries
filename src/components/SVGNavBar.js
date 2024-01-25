@@ -24,6 +24,7 @@ function SVGNavBar() {
             <Nav.Link as={Link} to="/">Intro</Nav.Link>
             <Nav.Link as={Link} to="/geometry">Geometry</Nav.Link>
             <Nav.Link as={Link} to="/pixi-svg">Pixi-SVG</Nav.Link>
+            <Nav.Link as={Link} to="/pixi-svg/svg-examples">Examples</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

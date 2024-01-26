@@ -15,7 +15,7 @@ export default function SVGRoot() {
     return (
         <>
         <SVGNavBar />
-        <SVGConvert svgFileList={"svg-list.json"} svgFilePath={"/static/svg/"} svgObject={svgObject} setSvgObject={setSvgObject}/>
+        <SVGConvert svgFileList={"svg-examples.json"} svgFilePath={"/static/svg/"} svgObject={svgObject} setSvgObject={setSvgObject}/>
         <div id="detail">
             <Outlet context={[svgObject]}/>
         </div>

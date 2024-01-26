@@ -8,20 +8,20 @@ Contents
 
     * Include documentation comments in the conversion component.
 
-    Remove unwanted console logging
+    * Remove unwanted console logging
 
-    Study Pixi-JS to see what additional graphics features are
+    * Study Pixi-JS to see what additional graphics features are
     available.
 
-    Checkout the README for additional notes on svgPlot
+    * Checkout the README for additional notes on svgPlot
 
-    Plan-out the svgPlot function
+    * Plan-out the svgPlot function
 
-    Write the svgPlot Function
+    * Write the svgPlot Function
 
     Prepare sample svg graphics
 
-    Set up an example stage component to use the graphics.
+    * Set up an example stage component to use the graphics.
 
     Test the utility
 

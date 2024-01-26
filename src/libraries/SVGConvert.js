@@ -299,7 +299,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
             node.curveParam1y = parseFloat(coords[1]) + lastNode.y;
             coords = nodeList[++i].split(",");
             node.curveParam2x = parseFloat(coords[0]) + lastNode.x;
-            node.curveParam2y = parseFloat(coords[0]) + lastNode.y;
+            node.curveParam2y = parseFloat(coords[1]) + lastNode.y;
             coords = nodeList[++i].split(",");
             node.x = parseFloat(coords[0]) + lastNode.x;
             node.y = parseFloat(coords[1]) + lastNode.y;
@@ -353,7 +353,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         const hexVals="abcdef";
         let s1 = s.substring(1, s.length);
         let hexLen = s1.length;
-        let pow = hexLen;
+        let pow = hexLen - 1;
         let value = 0;
         for (let char of s1) {
           let pv = hexVals.indexOf(char);

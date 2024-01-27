@@ -10,7 +10,7 @@ The routine is an event driven parser that reads the json file list entry by
 triggering a parser effect to process each file, one at a time.
 
 */
-export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgObject}) {
+export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgObject, setSvgLoaded}) {
   const [fileLoading, setFileLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fetchNext, setFetchNext] = useState(false);
@@ -92,10 +92,11 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       }
       else {
         setFetchNext(false);
+        setSvgLoaded(true);
       }
     }
 
-  }, [fetchNext])
+  }, [fetchNext, setSvgLoaded])
 
   // Process the svg file into a javascript array object
   useEffect( () => {
@@ -159,9 +160,10 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         }
       }
       // Adjust the path nodes to scale and origin
-      pathArray = adjustNodes(minX, minY, pathArray);
-      let width = maxX - minX + 1;
-      let height = maxY - minY + 1;
+      const scale = 2;
+      pathArray = adjustNodes(scale, minX, minY, pathArray);
+      let width = (maxX - minX + 1) * scale;
+      let height = (maxY - minY + 1) * scale;
       return [pathArray, width, height];
     }
 
@@ -188,10 +190,11 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       let nodeArray = [];
       let nodeList = nodeLine.split(" ");
       let startOfNodes = true;
-      let minX = 0;
-      let minY = 0;
-      let maxX = 0;
-      let maxY = 0;
+      let sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey = 0;
+      let minX, cxMin = 0;
+      let minY, cyMin = 0;
+      let maxX, cxMax = 0;
+      let maxY, cyMax = 0;
       let linkType = "";
       let node = {};
       let closed = false;
@@ -285,24 +288,40 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
           // Curves
           else if (linkType === "CurveAbs") {
-            node.curveParam1x = parseFloat(coords[0]);
-            node.curveParam1y = parseFloat(coords[1]);
+            sx = lastNode.x;
+            sy = lastNode.y;
+            cp1x = parseFloat(coords[0]);
+            cp1y = parseFloat(coords[1]);
             coords = nodeList[++i].split(",");
-            node.curveParam2x = parseFloat(coords[0]);
-            node.curveParam2y = parseFloat(coords[1]);
+            cp2x = parseFloat(coords[0]);
+            cp2y = parseFloat(coords[1]);
             coords = nodeList[++i].split(",");
-            node.x = parseFloat(coords[0]);
-            node.y = parseFloat(coords[1]);
+            ex = parseFloat(coords[0]);
+            ey = parseFloat(coords[1]);
+            node.curveParam1x = cp1x;
+            node.curveParam1y = cp1y;
+            node.curveParam2x = cp2x;
+            node.curveParam2y = cp2y;
+            [cxMin,  cyMin, cxMax, cyMax] = getCurveMinMax(sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey);
           }
           else if (linkType === "CurveRel") {
-            node.curveParam1x = parseFloat(coords[0]) + lastNode.x;
-            node.curveParam1y = parseFloat(coords[1]) + lastNode.y;
+            sx = lastNode.x;
+            sy = lastNode.y;
+            cp1x = parseFloat(coords[0]) + sx;
+            cp1y = parseFloat(coords[1]) + sy;
             coords = nodeList[++i].split(",");
-            node.curveParam2x = parseFloat(coords[0]) + lastNode.x;
-            node.curveParam2y = parseFloat(coords[1]) + lastNode.y;
+            cp2x = parseFloat(coords[0]) + sx;
+            cp2y = parseFloat(coords[1]) + sy;
             coords = nodeList[++i].split(",");
-            node.x = parseFloat(coords[0]) + lastNode.x;
-            node.y = parseFloat(coords[1]) + lastNode.y;
+            ex = parseFloat(coords[0]) + sx;
+            ey = parseFloat(coords[1]) + sy;
+            node.curveParam1x = cp1x;
+            node.curveParam1y = cp1y;
+            node.curveParam2x = cp1x;
+            node.curveParam2y = cp1y;
+            node.x = ex;
+            node.y = ey;
+            [cxMin,  cyMin, cxMax, cyMax] = getCurveMinMax(sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey);
           }
           nodeArray.push(node);
           if (startOfNodes) {
@@ -311,11 +330,19 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
             maxX = node.x;
             maxY = node.y;
           }
+
           else {
             if (node.x < minX) minX = node.x;
             if (node.x > maxX) maxX = node.x;
             if (node.y < minY) minY = node.y;
             if (node.y > maxY) maxY = node.y;
+
+            if (linkType.indexOf("Curve") !== -1) {
+              if (cxMin < minX) minX = cxMin;
+              if (cyMin < minY) minY = cyMin;
+              if (cxMax > maxX) maxX = cxMax;
+              if (cyMax > maxY) maxY = cyMax;     
+            }
           }
         }
         else {
@@ -327,8 +354,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       return [closed, minX, minY, maxX, maxY, nodeArray];
     }
 
-    const adjustNodes = (minX, minY, pathArray) => {
-      const scale = 2;
+    const adjustNodes = (scale, minX, minY, pathArray) => {
       // For each path
       for (let i = 0; i < pathArray.length; i++) {
         // Adjust the nodes to the effective zero origin and rescale
@@ -346,6 +372,42 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         }
       }
       return pathArray;
+    }
+
+    const getCurveMinMax = (sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey) => {
+
+      // Formulation for cubic bezier curve
+      // B(t) = (1-t)^3 * P0 + 3(1-t)^2 * t * P1 + 3(1-t) * t^2 * P2 + t^3 * P3
+      // where t >= 0 && t <= 1
+      const bezier = (t, p1, p2, p3, p4) => {
+        let t1 = (1 - t) ** 3 * p1;
+        let t2 = 3 * (1 - t) ** 2 * t * p2;
+        let t3 = 3 * (1 - t) * t ** 2 * p3;
+        let t4 = t ** 3 * p4;
+        return (t1 + t2 + t3 + t4);
+      }
+
+      // Initialise min and max
+      let minX = sx;
+      if (ex < minX) minX = ex;
+      let minY = sy;
+      if (ey < minY) minY = ey;
+      let maxX = ex;
+      if (sx > maxX) maxX = sx;
+      let maxY = ey;
+      if (sy > maxY) maxY = sy;
+
+      const step = 0.1;
+      for (let t = step; t < 1; t += step) {
+        let nx = bezier(t, sx, cp1x, cp2x, ex);
+        let ny = bezier(t, sy, cp1y, cp2y, ey);
+        if (nx < minX) minX = nx;
+        if (ny < minY) minY = ny;
+        if (nx > maxX) maxX = nx;
+        if (ny > maxY) maxY = ny;
+      }
+
+      return [minX, minY, maxX, maxY];
     }
 
     const hexCharToInt = (s) => {

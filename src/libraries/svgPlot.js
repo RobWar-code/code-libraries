@@ -12,12 +12,9 @@
  */
 export default function svgPlot(g, svgObject, handle, x, y, anchor, scale) {
     const getSvg = (svgObject, handle) => {
-        console.log("svgObject at svgPlot:", svgObject);
         let found = false;
         let svgItem = {};
         for (let item of svgObject) {
-            console.log("item:", item);
-            console.log("handle", handle);
             if (item.handle === handle) {
                 svgItem = item;
                 found = true;
@@ -84,7 +81,6 @@ export default function svgPlot(g, svgObject, handle, x, y, anchor, scale) {
                 cp1Y = cp1Y * scaleSet + y - anchorY;
                 cp2X = cp2X * scaleSet + x - anchorX;
                 cp2Y = cp2Y * scaleSet + y - anchorY;
-                console.log("cp:", cp1X, cp1Y, cp2X, cp2Y, px, py);
                 g.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, px, py);
             }
             else {

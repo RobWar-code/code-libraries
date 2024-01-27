@@ -19,11 +19,17 @@ Contents
 
     * Write the svgPlot Function
 
+    * Add inclusion of curve x,y max, min.
+
+    * svgLoaded flag before draft
+
     Prepare sample svg graphics
 
     * Set up an example stage component to use the graphics.
 
     Test the utility
+
+    Update the README usage
 
 
 <h1>Work Done

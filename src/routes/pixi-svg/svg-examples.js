@@ -4,7 +4,8 @@ import {useOutletContext} from "react-router-dom";
 import svgPlot from "../../libraries/svgPlot";
 
 export default function SVGExamples () {
-    const svgObject = useOutletContext()[0];
+    const {svgLoaded, svgObject} = useOutletContext();
+
     console.log("svgObject on page", svgObject);
 
     /* Test Example - Bezier Function */
@@ -39,6 +40,48 @@ export default function SVGExamples () {
         g.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endNodeX, endNodeY);
     }
 
+    const bezierMinMaxSample = (g) => {
+        const doBezierPoints = (g, sx, sy, ex, ey, cp1x, cp1y, cp2x, cp2y) => {
+            // Formulation for cubic bezier curve
+            // B(t) = (1-t)^3 * P0 + 3(1-t)^2 * t * P1 + 3(1-t) * t^2 * P2 + t^3 * P3
+            // where t >= 0 && t <= 1
+            const bezier = (t, p1, p2, p3, p4) => {
+                let t1 = (1 - t) ** 3 * p1;
+                let t2 = 3 * (1 - t) ** 2 * t * p2;
+                let t3 = 3 * (1 - t) * t ** 2 * p3;
+                let t4 = t ** 3 * p4;
+                return (t1 + t2 + t3 + t4);
+            }
+
+            const step = 0.1;
+
+            for (let t = step; t < 1; t += step) {
+                let nx = bezier(t, sx, cp1x, cp2x, ex);
+                let ny = bezier(t, sy, cp1y, cp2y, ey);
+                g.beginFill();
+                g.drawCircle(nx, ny, 2);
+                g.endFill();
+            }
+        }
+
+        const sx = 50;
+        const sy = 200;
+        const cp1x = 75;
+        const cp1y = 175;
+        const cp2x = 200;
+        const cp2y = 225;
+        const ex = 250;
+        const ey = 200;
+
+        g.clear();
+        g.lineStyle(1, 0x000000);
+        g.moveTo(sx, sy);
+        g.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, ex, ey);
+
+        doBezierPoints(g, sx, sy, ex, ey, cp1x, cp1y, cp2x, cp2y);
+
+    }
+
     const svgSamples = (g) => {
         let found = svgPlot(g, svgObject, "square", 250, 200);
         console.log("found:", found);
@@ -49,9 +92,12 @@ export default function SVGExamples () {
             <Row>
                 <Col>
                     <Stage width={600} height={400} options={{background: 0xd0d000, antialias: true}}>
-                        <Graphics draw={bezierSample} />
-                        <Graphics draw={bezierSample2} />
-                        <Graphics draw={svgSamples} />
+                        {/* <Graphics draw={bezierSample} /> */}
+                        {/* <Graphics draw={bezierSample2} /> */}
+                        <Graphics draw={bezierMinMaxSample} />
+                        { svgLoaded && 
+                            <Graphics draw={svgSamples} />
+                        }
                     </Stage>
                 </Col>
             </Row>

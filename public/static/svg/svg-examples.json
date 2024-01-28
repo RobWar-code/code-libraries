@@ -2,5 +2,13 @@
     {
         "file" : "square.svg",
         "handle" : "square"
+    },
+    {
+        "file" : "triangle.svg",
+        "handle" : "triangle"
+    },
+    {
+        "file" : "freehand.svg",
+        "handle" : "freehand"
     }
 ]

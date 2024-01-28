@@ -49,6 +49,7 @@ export default function svgPlot(g, svgObject, handle, x, y, anchor, scale) {
     for (let path of svgItem.paths) {
         // Set-up styles
         let fill = path.fill;
+        if (typeof fill !== "number") fill = 0;
         let stroke = path.stroke;
         let strokeWidth = parseFloat(path.stroke_width.substr(0, path.stroke_width.length - 2));
         if (fill !== "none") {

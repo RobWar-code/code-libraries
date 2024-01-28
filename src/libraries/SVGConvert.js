@@ -191,6 +191,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       let nodeList = nodeLine.split(" ");
       let startOfNodes = true;
       let sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey = 0;
+      let finalCurve = false;
       let minX, cxMin = 0;
       let minY, cyMin = 0;
       let maxX, cxMax = 0;
@@ -288,6 +289,11 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
           // Curves
           else if (linkType === "CurveAbs") {
+            // Check for final curve
+            finalCurve = false;
+            if (nodeList[i + 2] === "z" || nodeList[i + 2] === "Z") {
+              finalCurve = true;
+            }
             sx = lastNode.x;
             sy = lastNode.y;
             cp1x = parseFloat(coords[0]);
@@ -295,16 +301,28 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
             coords = nodeList[++i].split(",");
             cp2x = parseFloat(coords[0]);
             cp2y = parseFloat(coords[1]);
-            coords = nodeList[++i].split(",");
-            ex = parseFloat(coords[0]);
-            ey = parseFloat(coords[1]);
-            node.curveParam1x = cp1x;
-            node.curveParam1y = cp1y;
-            node.curveParam2x = cp2x;
-            node.curveParam2y = cp2y;
+            if (!finalCurve) {
+              coords = nodeList[++i].split(",");
+              ex = parseFloat(coords[0]);
+              ey = parseFloat(coords[1]);
+              node.curveParam1x = cp1x;
+              node.curveParam1y = cp1y;
+              node.curveParam2x = cp2x;
+              node.curveParam2y = cp2y;
+              node.x = ex;
+              node.y = ey;
+            }
+            else {
+              ex = nodeArray[0].x;
+              ey = nodeArray[0].y;
+            }
             [cxMin,  cyMin, cxMax, cyMax] = getCurveMinMax(sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey);
           }
           else if (linkType === "CurveRel") {
+            finalCurve = false;
+            if (nodeList[i + 2] === "z" || nodeList[i + 2] === "Z") {
+              finalCurve = true;
+            }
             sx = lastNode.x;
             sy = lastNode.y;
             cp1x = parseFloat(coords[0]) + sx;
@@ -312,18 +330,32 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
             coords = nodeList[++i].split(",");
             cp2x = parseFloat(coords[0]) + sx;
             cp2y = parseFloat(coords[1]) + sy;
-            coords = nodeList[++i].split(",");
-            ex = parseFloat(coords[0]) + sx;
-            ey = parseFloat(coords[1]) + sy;
-            node.curveParam1x = cp1x;
-            node.curveParam1y = cp1y;
-            node.curveParam2x = cp1x;
-            node.curveParam2y = cp1y;
-            node.x = ex;
-            node.y = ey;
+            if (!finalCurve) {
+              coords = nodeList[++i].split(",");
+              ex = parseFloat(coords[0]) + sx;
+              ey = parseFloat(coords[1]) + sy;
+              node.curveParam1x = cp1x;
+              node.curveParam1y = cp1y;
+              node.curveParam2x = cp1x;
+              node.curveParam2y = cp1y;
+              node.x = ex;
+              node.y = ey;
+            }
+            else {
+              ex = nodeArray[0].x;
+              ey = nodeArray[0].y;
+            }
             [cxMin,  cyMin, cxMax, cyMax] = getCurveMinMax(sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey);
           }
-          nodeArray.push(node);
+          if (!finalCurve) {
+            nodeArray.push(node);
+          }
+          else {
+            nodeArray[nodeArray.length - 1].curveParam1x = cp1x;
+            nodeArray[nodeArray.length - 1].curveParam1y = cp1y;
+            nodeArray[nodeArray.length - 1].curveParam2x = cp2x;
+            nodeArray[nodeArray.length - 1].curveParam2y = cp2y;
+          }
           if (startOfNodes) {
             minX = node.x;
             minY = node.y;
@@ -345,7 +377,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
             }
           }
         }
-        else {
+        else { 
           closed = true;
           break;
         }

@@ -83,8 +83,13 @@ export default function SVGExamples () {
     }
 
     const svgSamples = (g) => {
-        let found = svgPlot(g, svgObject, "square", 250, 200);
-        console.log("found:", found);
+        g.clear();
+        let found = svgPlot(g, svgObject, "square", 90, 100, {x:0.5, y:0.5}, 0.4);
+        console.log("found square:", found);
+        found = svgPlot(g, svgObject, "triangle", 240, 100, {x:0.5, y:0.5}, 0.4);
+        console.log("found triangle", found);
+        found = svgPlot(g, svgObject, "freehand", 360, 100, {x:0.5, y:0.5}, 0.4);
+        console.log("found triangle", found);
     }
 
     return (
@@ -94,7 +99,7 @@ export default function SVGExamples () {
                     <Stage width={600} height={400} options={{background: 0xd0d000, antialias: true}}>
                         {/* <Graphics draw={bezierSample} /> */}
                         {/* <Graphics draw={bezierSample2} /> */}
-                        <Graphics draw={bezierMinMaxSample} />
+                        {/* <Graphics draw={bezierMinMaxSample} /> */}
                         { svgLoaded && 
                             <Graphics draw={svgSamples} />
                         }

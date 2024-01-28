@@ -89,7 +89,9 @@ export default function SVGExamples () {
         found = svgPlot(g, svgObject, "triangle", 240, 100, {x:0.5, y:0.5}, 0.4);
         console.log("found triangle", found);
         found = svgPlot(g, svgObject, "freehand", 360, 100, {x:0.5, y:0.5}, 0.4);
-        console.log("found triangle", found);
+        console.log("found freehand", found);
+        found = svgPlot(g, svgObject, "multipath", 480, 100, {x:0.5, y:0.5}, 0.4);
+        console.log("found multipath", found);
     }
 
     return (

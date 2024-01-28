@@ -336,8 +336,8 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
               ey = parseFloat(coords[1]) + sy;
               node.curveParam1x = cp1x;
               node.curveParam1y = cp1y;
-              node.curveParam2x = cp1x;
-              node.curveParam2y = cp1y;
+              node.curveParam2x = cp2x;
+              node.curveParam2y = cp2y;
               node.x = ex;
               node.y = ey;
             }

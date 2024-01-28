@@ -10,5 +10,9 @@
     {
         "file" : "freehand.svg",
         "handle" : "freehand"
+    },
+    {
+        "file" : "multipath.svg",
+        "handle" : "multipath"
     }
 ]

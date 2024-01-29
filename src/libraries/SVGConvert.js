@@ -59,7 +59,6 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         const fileName = fileJsonData.current[fileNum.current].file;
         lastSvgHandle.current = fileJsonData.current[fileNum.current].handle;
         const fileListPath = filePath.current + fileName;
-        console.log("fileListPath:", fileListPath);
         const response = await fetch(fileListPath, {
           headers: {'Content-Type': 'text/plain', 'Accept': 'text/plain'}  
         });
@@ -70,7 +69,6 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         }
 
         const data = await response.text();
-        console.log("data:", data);
         svgData.current = data;
         ++fileNum.current;
         // Set flag to process the svg data

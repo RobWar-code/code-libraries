@@ -54,6 +54,10 @@ inkscape svg drawing files to objects which can then be processed
 by the graphic functions using the @pixi/react Graphics procedures
 onto a <Stage> element. These are CONVERSION and PLOTTING functions.
 
+It has relatively limited representation of svg's allowing for 
+polylines and bezier curves and fill colour and multiple paths,
+using the corresponding PIXI features.
+
 
 ### Conversion Functions
 
@@ -81,17 +85,23 @@ import {useState} from 'react';
 import SVGConvert from '../libraries/SVGConversion';
 
 const [svgObject, setSvgObject] = useState([]);
+const [svgLoaded, setSvgLoaded] = useState([]);
 
 // JSX
 <App>
 
-    <SVGConvert 
-        fileList={"fileListFile.json"} 
-        pathToFiles={"pathToFiles"}
-        svgObject={svgObject} 
-        setSvgObject={setSvgObject}
-    />
-    <Outlet context={[svgObject, setSvgObject]} />
+    { !svgLoaded &&
+        <>
+        <SVGConvert 
+            fileList={"fileListFile.json"} 
+            pathToFiles={"pathToFiles"}
+            svgObject={svgObject} 
+            setSvgObject={setSvgObject}
+            setSvgLoaded={svgLoaded}
+        />
+        <Outlet context={[svgObject, setSvgObject]} />
+        </>
+    }
 
 </App>
 ```
@@ -118,7 +128,7 @@ The svg object has the following format:
             paths: [
                 {
                     closed: true,
-                    fill: none or 0xnnnnnn,
+                    fill: none or 0xnnnnnn or url(..),
                     stroke: none or 0xnnnnnn,
                     stroke_width: 0.263935,
                     stroke_linecap: butt or round or square,
@@ -132,9 +142,10 @@ The svg object has the following format:
                     opacity: 0.5,
                     nodes: [
                         {
-                            type: curve or line segment,
-                            curve_param_1: 0.3,
-                            curve_param_2: 0.4,
+                            curveParam1x: 70,
+                            curveParam1y: 40,
+                            curveParam2x: 50,
+                            curveParam2y: 30,
                             x: 30.0,
                             y: 50.0
                         }
@@ -157,11 +168,35 @@ Having obtained the SVG data and converted it to an SVGObject, the svgPlotter fu
 is used as follows to plot the graphic
 
 ```js
- // The handle is the name of the graphic derived from the original JSON file
- // g is the @pixi/react graphics object
- // anchor operates in the same way as @pixi/react image sprite anchor.
- svgPlotter(handle, g, x, y, anchor, scale);
+import {Stage, Graphics} from "@pixi/react";
+import {useOutletContext} from "react-router-dom";
+import svgPlot from "../../libraries/svgPlot";
+
+export default function SVGExamples () {
+    const {svgLoaded, svgObject} = useOutletContext();
+
+ 
+    const svgSamples = (g) => {
+        g.clear();
+        let found = svgPlot(g, svgObject, "square", 90, 100, {x:0.5, y:0.5}, 0.4);
+        console.log("found square:", found);
+        found = svgPlot(g, svgObject, "triangle", 240, 100, {x:0.5, y:0.5}, 0.4);
+        console.log("found triangle", found);
+    }
+
+    return (
+        <Stage width={600} height={400} options={{background: 0xd0d000, antialias: true}}>
+            {/* <Graphics draw={bezierSample} /> */}
+            {/* <Graphics draw={bezierSample2} /> */}
+            {/* <Graphics draw={bezierMinMaxSample} /> */}
+            { svgLoaded && 
+                <Graphics draw={svgSamples} />
+            }
+        </Stage>
+    )
+}
 ```
+
 ## Schedule
 
 Start Date: 20/01/2024
@@ -169,19 +204,19 @@ Start Date: 20/01/2024
 | Task                            | Est. Time | Actual     |
 | ------------------------------- | --------- | ---------- |
 | CONVERSION                      |           |            |
-| Programming Interface Design    | 2         |            |
-| Logical Objects Design          | 2         |            |
-| Data Conversion Design          | 2         |            |
-| Coding                          | 4         |            |
-| Testing                         | 3         |            |
+| Programming Interface Design    | 2         |  1         |
+| Logical Objects Design          | 2         |  0.5       |
+| Data Conversion Design          | 2         |  2         |
+| Coding                          | 4         |  3         |
+| Testing                         | 3         |  1         |
 | ------------------------------- | --------- | ---------- |
 | PLOTTING                        |           |            |
-| Programming Interface Design    | 2         |            |
-| Logical Object Design           | 2         |            |
-| Coding                          | 6         |            |
-| Testing                         | 4         |            |
+| Programming Interface Design    | 2         |  0.5       |
+| Logical Object Design           | 2         |  0.5       |
+| Coding                          | 6         |  1.5       |
+| Testing                         | 4         |  1         |
 | ------------------------------- | --------- | ---------- |
-| TOTALS                          | 27        |            |
+| TOTALS                          | 27        |  10.5      |
 | ------------------------------- | ----------| ---------- |
 
-
+Completion Date: 29/01/2024

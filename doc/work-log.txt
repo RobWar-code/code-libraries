@@ -6,6 +6,11 @@ Contents
 
 <h1>Work Due
 
+
+<h1>Work Done
+
+    29/01/2024
+
     * Include documentation comments in the conversion component.
 
     * Remove unwanted console logging
@@ -23,16 +28,13 @@ Contents
 
     * svgLoaded flag before draft
 
-    Prepare sample svg graphics
+    * Prepare sample svg graphics
 
     * Set up an example stage component to use the graphics.
 
-    Test the utility
+    * Test the utility
 
-    Update the README usage
-
-
-<h1>Work Done
+    * Update the README usage
 
     25/01/2024
 

@@ -162,6 +162,9 @@ the scale can be set by the plotting functions. All coordinates in the
 object are absolute, so these are calculated from relative coordinates
 in the svg source.
 
+Note that the svg source data can have multiple closed shapes in a single path
+data set.
+
 ### Plotting the SVGs
 
 Having obtained the SVG data and converted it to an SVGObject, the svgPlotter function
@@ -220,3 +223,7 @@ Start Date: 20/01/2024
 | ------------------------------- | ----------| ---------- |
 
 Completion Date: 29/01/2024
+
+Additional Work Arising
+
+Resolution of multiple closed paths in a single path data set.

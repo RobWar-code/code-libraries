@@ -96,11 +96,11 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
 
   }, [fetchNext, setSvgLoaded])
 
-  // Process the svg file into a javascript array object
+  // Process the svg file into a javascript array object (array of path arrays)
   useEffect( () => {
 
     const processSvgData = () => {
-      let pathArray = [];
+      let pathSet = [];
       let minX = 0;
       let minY = 0;
       let maxX = 0;
@@ -184,7 +184,70 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       return styleObj;
     }
 
-    const processNodeLine = (nodeLine) => {
+    const processNodeShapes = (nodeLine) => {
+      let endOfShapes = false;
+      let start = true;
+      let minX = 0;
+      let minY = 0;
+      let maxX = 0;
+      let maxY = 0;
+      let instructionList = nodeLine.split(" ");
+      let lastX, lastY = 0;
+      let startPointer = 0;
+      let pointer = 0;
+      let relative = false;
+      while (!endOfShapes) {
+        // Scan to closing z or end of instructions
+        let startPointer = pointer;
+        let endOfShape = false;
+        while (!endOfShape) {
+          let ins = instructionList[pointer];
+          if (ins === "z" || ins === "Z" || pointer === instructionList.length - 1) {
+            endOfShape = true;
+            break;
+          }
+          if (ins === "M" || ins === "m") {
+            if (pointer !== startPointer) {
+              endOfShape = true;
+              --pointer;
+              break;
+            }
+          }
+          ++pointer;
+        }
+        // Collect the node data 
+        if (endOfShape) {
+          let [minX1, minY1, maxX1, maxY1, nodeArray, relative] = processShape(instructionList, startPointer, relative, lastX, lastY);
+          if (ins === "z") {
+            relative = true;
+          }
+          else if (ins === "Z") {
+            relative = false;
+          }
+          lastX = nodeArray[nodeArray.length - 1].x;
+          lastY = nodeArray[nodeArray.length - 1].y;
+          // Set maximum and minimum
+          if (start) {
+            start = false;
+            minX = minX1;
+            minY = minY1;
+            maxX = maxX1;
+            maxY = maxY1;
+          }
+          else {
+            if (minX1 < minX) minX = minX1;
+            if (minY1 < minY) minY = minY1;
+            if (maxX1 > maxX) maxX = maxX1;
+            if (maxY1 > maxY) maxY = maxY1;
+          }
+        }
+        if (pointer >= instructionList.length - 1) {
+          endOfShapes = true;
+        }
+      }
+
+    }
+    const processShape = (instructionList, pointer, relative) => {
       let nodeArray = [];
       let nodeList = nodeLine.split(" ");
       let startOfNodes = true;

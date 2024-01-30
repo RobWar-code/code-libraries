@@ -6,6 +6,15 @@ Contents
 
 <h1>Work Due
 
+    Fix multiple paths in one problem from source data in conversion routine.
+
+        Detect z or Z end of closed shape condition
+
+        Detect m or M for end of unclosed line
+
+            * Prove it
+
+        Detect new groups in a group (or specify single groups only).
 
 <h1>Work Done
 

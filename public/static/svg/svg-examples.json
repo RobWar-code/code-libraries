@@ -14,5 +14,9 @@
     {
         "file" : "multipath.svg",
         "handle" : "multipath"
+    },
+    {
+        "file" : "jug01.svg",
+        "handle" : "jug"
     }
 ]

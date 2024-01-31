@@ -125,9 +125,8 @@ The svg object has the following format:
             handle: "mySVG",
             width: ,
             height: ,
-            paths: [
+            pathSets: [
                 {
-                    closed: true,
                     fill: none or 0xnnnnnn or url(..),
                     stroke: none or 0xnnnnnn,
                     stroke_width: 0.263935,
@@ -140,16 +139,19 @@ The svg object has the following format:
                     stroke_opacity:1,
                     fill_opacity: 1,
                     opacity: 0.5,
-                    nodes: [
-                        {
-                            curveParam1x: 70,
-                            curveParam1y: 40,
-                            curveParam2x: 50,
-                            curveParam2y: 30,
-                            x: 30.0,
-                            y: 50.0
-                        }
-                    ]
+                    paths: {
+                        closed: true;
+                        nodes: [
+                            {
+                                curveParam1x: 70,
+                                curveParam1y: 40,
+                                curveParam2x: 50,
+                                curveParam2y: 30,
+                                x: 30.0,
+                                y: 50.0
+                            }
+                        ]
+                    }
                 }
 
             ]

@@ -100,7 +100,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
   useEffect( () => {
 
     const processSvgData = () => {
-      let pathSet = [];
+      let pathsArray = [];
       let minX = 0;
       let minY = 0;
       let maxX = 0;
@@ -136,7 +136,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
               let s = line.substring(p + 1, line.length);
               p = s.indexOf("\"");
               let nodeLine = s.substring(0, p);
-              let [closed, minX1, minY1, maxX1, maxY1, nodeArray] = processNodeLine(nodeLine);
+              let [minX1, minY1, maxX1, maxY1, pathArray] = processNodeShapes(nodeLine);
               if (pathCount === 0) {
                 minX = minX1;
                 minY = minY1;
@@ -149,20 +149,19 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
                 if (maxX1 > maxX) maxX = maxX1;
                 if (maxY1 > maxY) maxY = maxY1;
               }
-              styleObj.closed = closed;
-              styleObj.nodes = nodeArray;
+              styleObj.paths = pathArray;
             }
             ++pathCount;
-            pathArray.push(styleObj);
+            pathsArray.push(styleObj);
           }
         }
       }
       // Adjust the path nodes to scale and origin
       const scale = 2;
-      pathArray = adjustNodes(scale, minX, minY, pathArray);
+      pathsArray = adjustNodes(scale, minX, minY, pathsArray);
       let width = (maxX - minX + 1) * scale;
       let height = (maxY - minY + 1) * scale;
-      return [pathArray, width, height];
+      return [pathsArray, width, height];
     }
 
     const processStyleLine = (styleLine) => {
@@ -185,6 +184,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
     }
 
     const processNodeShapes = (nodeLine) => {
+      let pathArray = [];
       let endOfShapes = false;
       let start = true;
       let minX = 0;
@@ -193,7 +193,6 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       let maxY = 0;
       let instructionList = nodeLine.split(" ");
       let lastX, lastY = 0;
-      let startPointer = 0;
       let pointer = 0;
       let relative = false;
       while (!endOfShapes) {
@@ -217,13 +216,8 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         }
         // Collect the node data 
         if (endOfShape) {
-          let [minX1, minY1, maxX1, maxY1, nodeArray, relative] = processShape(instructionList, startPointer, relative, lastX, lastY);
-          if (ins === "z") {
-            relative = true;
-          }
-          else if (ins === "Z") {
-            relative = false;
-          }
+          let [minX1, minY1, maxX1, maxY1, nodeArray, nextRelative] = processShape(instructionList, startPointer, relative, lastX, lastY);
+          relative = nextRelative;
           lastX = nodeArray[nodeArray.length - 1].x;
           lastY = nodeArray[nodeArray.length - 1].y;
           // Set maximum and minimum
@@ -240,33 +234,41 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
             if (maxX1 > maxX) maxX = maxX1;
             if (maxY1 > maxY) maxY = maxY1;
           }
+          // Append the paths gathered from this svg path to the main list.
+          pathArray[pathArray.length - 1].paths = [...pathArray[pathArray.length - 1].paths, ...nodeArray];
         }
         if (pointer >= instructionList.length - 1) {
           endOfShapes = true;
         }
       }
-
+      return [minX, minY, maxX, maxY, pathArray]
     }
-    const processShape = (instructionList, pointer, relative) => {
+
+    const processShape = (instructionList, pointer, relative, lastX, lastY) => {
       let nodeArray = [];
-      let nodeList = nodeLine.split(" ");
+      let linkType = "";
+      if (instructionList[0].indexOf(',') !== -1) {
+        relative ? linkType = "CurveRel" : linkType = "CurveAbs"
+      }
       let startOfNodes = true;
+      let endOfLine = false;
       let sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey = 0;
       let finalCurve = false;
       let minX, cxMin = 0;
       let minY, cyMin = 0;
       let maxX, cxMax = 0;
       let maxY, cyMax = 0;
-      let linkType = "";
       let node = {};
       let closed = false;
-      for (let i = 0; i < nodeList.length; i++) {
+      // Break when z or Z found
+      for (let i = pointer; i < instructionList.length; i++) {
         let lastNode = {}
         lastNode = {...node};
         node = {};
-        let coords = nodeList[i].split(",");
+        let coords = instructionList[i].split(",");
         // Process directive tags
-        if (coords.length === 1) {
+        // Allow for closed polyline shape
+        if (coords.length === 1 && !(startOfNodes && linkType !== "") ) {
           let flag = coords[0];
           switch (flag) {
             case "C":
@@ -310,10 +312,10 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
               break;
           }
           if (linkType !== "Close") {
-            coords = nodeList[++i].split(",");
+            coords = instructionList[++i].split(",");
           }
         }
-        if (linkType !== "Close") {
+        if (linkType !== "Close" && !endOfLine) {
           // Singleton Node (H or V)
           if (linkType === "HorizontalAbs") {
             node.x = parseFloat(coords[0]);
@@ -335,10 +337,18 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           else if (linkType === "MoveAbs" || (startOfNodes && linkType === "MoveRel")) {
             node.x = parseFloat(coords[0]);
             node.y = parseFloat(coords[1]);
+            if (!startOfNodes) endOfLine = true;
           }
           else if (linkType === "MoveRel") {
-            node.x = lastNode.x + parseFloat(coords[0]);
-            node.y = lastNode.y + parseFloat(coords[1]);
+            if (startOfNodes) {
+              node.x = lastX + parseFloat(coords[0]);
+              node.y = lastY + parseFloat(coords[0]);
+            }
+            else {
+              node.x = lastNode.x + parseFloat(coords[0]);
+              node.y = lastNode.y + parseFloat(coords[1]);
+            }
+            if (!startOfNodes) endOfLine = true;
           }
           else if (linkType === "LineAbs") {
             node.x = parseFloat(coords[0]);
@@ -352,18 +362,18 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           else if (linkType === "CurveAbs") {
             // Check for final curve
             finalCurve = false;
-            if (nodeList[i + 2] === "z" || nodeList[i + 2] === "Z") {
+            if (instructionList[i + 2] === "z" || instructionList[i + 2] === "Z") {
               finalCurve = true;
             }
             sx = lastNode.x;
             sy = lastNode.y;
             cp1x = parseFloat(coords[0]);
             cp1y = parseFloat(coords[1]);
-            coords = nodeList[++i].split(",");
+            coords = instructionList[++i].split(",");
             cp2x = parseFloat(coords[0]);
             cp2y = parseFloat(coords[1]);
             if (!finalCurve) {
-              coords = nodeList[++i].split(",");
+              coords = instructionList[++i].split(",");
               ex = parseFloat(coords[0]);
               ey = parseFloat(coords[1]);
               node.curveParam1x = cp1x;
@@ -374,6 +384,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
               node.y = ey;
             }
             else {
+              endOfLine = true;
               ex = nodeArray[0].x;
               ey = nodeArray[0].y;
             }
@@ -381,18 +392,18 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
           else if (linkType === "CurveRel") {
             finalCurve = false;
-            if (nodeList[i + 2] === "z" || nodeList[i + 2] === "Z") {
+            if (instructionList[i + 2] === "z" || instructionList[i + 2] === "Z") {
               finalCurve = true;
             }
             sx = lastNode.x;
             sy = lastNode.y;
             cp1x = parseFloat(coords[0]) + sx;
             cp1y = parseFloat(coords[1]) + sy;
-            coords = nodeList[++i].split(",");
+            coords = instructionList[++i].split(",");
             cp2x = parseFloat(coords[0]) + sx;
             cp2y = parseFloat(coords[1]) + sy;
             if (!finalCurve) {
-              coords = nodeList[++i].split(",");
+              coords = instructionList[++i].split(",");
               ex = parseFloat(coords[0]) + sx;
               ey = parseFloat(coords[1]) + sy;
               node.curveParam1x = cp1x;
@@ -403,6 +414,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
               node.y = ey;
             }
             else {
+              endOfLine = true;
               ex = nodeArray[0].x;
               ey = nodeArray[0].y;
             }
@@ -439,32 +451,45 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
         }
         else { 
-          closed = true;
+          if (coords[0] === "z" || coords[0] === "Z") {
+            closed = true;
+          }
+          else {
+            linkType === "CurveRel" ? relative = true : relative = false;
+          }
           break;
         }
+        let pathItem = {};
+        pathItem.closed = closed;
+        pathItem.nodes = nodeArray;
+        nodeArray.push(pathItem);
         startOfNodes = false;
       }
-      return [closed, minX, minY, maxX, maxY, nodeArray];
+      return [closed, minX, minY, maxX, maxY, nodeArray, relative];
     }
 
-    const adjustNodes = (scale, minX, minY, pathArray) => {
+    const adjustNodes = (scale, minX, minY, pathsArray) => {
+
       // For each path
-      for (let i = 0; i < pathArray.length; i++) {
+      for (let i = 0; i < pathsArray.length; i++) {
         // Adjust the nodes to the effective zero origin and rescale
-        let nodeArray = pathArray[i].nodes;
-        for (let j = 0; j < nodeArray.length; j++) {
-          let node = nodeArray[j];
-          pathArray[i].nodes[j].x = (node.x - minX) * scale;
-          pathArray[i].nodes[j].y = (node.y - minY) * scale;
-          if ("curveParam1x" in node) {
-            pathArray[i].nodes[j].curveParam1x = (node.curveParam1x - minX) * scale;
-            pathArray[i].nodes[j].curveParam1y = (node.curveParam1y - minY) * scale;
-            pathArray[i].nodes[j].curveParam2x = (node.curveParam2x - minX) * scale;
-            pathArray[i].nodes[j].curveParam2y = (node.curveParam2y - minY) * scale;
+        let paths = pathsArray[i].paths;
+        for (let j = 0; j < paths.length; j++) {
+          let nodes = paths[j].nodes;
+          for (let k = 0; k < nodes.length; k++) {
+            let node = nodes[k];
+            node.x = (node.x - minX) * scale;
+            node.y = (node.y - minY) * scale;
+            if ("curveParam1x" in node) {
+              node.curveParam1x = (node.curveParam1x - minX) * scale;
+              node.curveParam1y = (node.curveParam1y - minY) * scale;
+              node.curveParam2x = (node.curveParam2x - minX) * scale;
+              node.curveParam2y = (node.curveParam2y - minY) * scale;
+            }
           }
         }
       }
-      return pathArray;
+      return pathsArray;
     }
 
     const getCurveMinMax = (sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey) => {
@@ -527,11 +552,11 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
     let svgItem = {};
 
     if (processSvg) {
-      const [pathArray, width, height] = processSvgData();
+      const [pathsArray, width, height] = processSvgData();
       svgItem.handle = lastSvgHandle.current;
       svgItem.width = width;
       svgItem.height = height;
-      svgItem.paths = pathArray;
+      svgItem.pathSets = pathsArray;
       setSvgObject( prevSvgObject => [...prevSvgObject, svgItem] );
       setProcessSvg(false);
       setFetchNext(true);

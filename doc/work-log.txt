@@ -6,7 +6,7 @@ Contents
 
 <h1>Work Due
 
-    Fix multiple paths in one problem from source data in conversion routine.
+    Fix multiple paths in one, problem from source data in conversion routine.
 
         Detect z or Z end of closed shape condition
 
@@ -15,6 +15,8 @@ Contents
             * Prove it
 
         Detect new groups in a group (or specify single groups only).
+
+        Apply changes to SVGConvert object output to svgPlot
 
 <h1>Work Done
 

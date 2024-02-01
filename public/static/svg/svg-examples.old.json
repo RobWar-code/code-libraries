@@ -1,0 +1,22 @@
+[
+    { 
+        "file" : "square.svg",
+        "handle" : "square"
+    },
+    {
+        "file" : "triangle.svg",
+        "handle" : "triangle"
+    },
+    {
+        "file" : "freehand.svg",
+        "handle" : "freehand"
+    },
+    {
+        "file" : "multipath.svg",
+        "handle" : "multipath"
+    },
+    {
+        "file" : "square02.svg",
+        "handle" : "square02"
+    }
+]

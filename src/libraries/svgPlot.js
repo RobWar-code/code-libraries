@@ -46,51 +46,53 @@ export default function svgPlot(g, svgObject, handle, x, y, anchor, scale) {
     let anchorY = (h * anchorSet.y) * scaleSet;
     
     // for each path in the drawing
-    for (let path of svgItem.paths) {
+    for (let pathSet of svgItem.pathSets) {
         // Set-up styles
-        let fill = path.fill;
+        let fill = pathSet.fill;
         if (typeof fill !== "number") fill = 0;
-        let stroke = path.stroke;
-        let strokeWidth = parseFloat(path.stroke_width.substr(0, path.stroke_width.length - 2));
-        if (fill !== "none") {
-            g.beginFill(fill);
-        }
+        let stroke = pathSet.stroke;
+        let strokeWidth = parseFloat(pathSet.stroke_width.substr(0, pathSet.stroke_width.length - 2));
         if (stroke !== "none") {
             g.lineStyle(strokeWidth, stroke);
         }
         else {
             g.lineStyle(0);
         }
-        let px = path.nodes[0].x;
-        let py = path.nodes[0].y;
-        g.moveTo(px * scaleSet + x - anchorX, py * scaleSet + y - anchorY);
-        let limit = path.nodes.length - 1;
-        if (path.closed) limit = path.nodes.length;
-        for (let i = 1; i <= limit; i++) {
-            let p = i;
-            if (path.closed && i === limit) p = 0;
-            px = path.nodes[p].x;
-            py = path.nodes[p].y;
-            px = px * scaleSet + x - anchorX;
-            py = py * scaleSet + y - anchorY;
-            if ("curveParam1x" in path.nodes[p]) {
-                let cp1X = path.nodes[p].curveParam1x;
-                let cp1Y = path.nodes[p].curveParam1y;
-                let cp2X = path.nodes[p].curveParam2x;
-                let cp2Y = path.nodes[p].curveParam2y;
-                cp1X = cp1X * scaleSet + x - anchorX;
-                cp1Y = cp1Y * scaleSet + y - anchorY;
-                cp2X = cp2X * scaleSet + x - anchorX;
-                cp2Y = cp2Y * scaleSet + y - anchorY;
-                g.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, px, py);
+        for (let path of pathSet.paths) {
+            let px = path.nodes[0].x;
+            let py = path.nodes[0].y;
+            if (fill !== "none") {
+                g.beginFill(fill);
             }
-            else {
-                g.lineTo(px, py);
+            g.moveTo(px * scaleSet + x - anchorX, py * scaleSet + y - anchorY);
+            let limit = path.nodes.length - 1;
+            if (path.closed) limit = path.nodes.length;
+            for (let i = 1; i <= limit; i++) {
+                let p = i;
+                if (path.closed && i === limit) p = 0;
+                px = path.nodes[p].x;
+                py = path.nodes[p].y;
+                px = px * scaleSet + x - anchorX;
+                py = py * scaleSet + y - anchorY;
+                if ("curveParam1x" in path.nodes[p]) {
+                    let cp1X = path.nodes[p].curveParam1x;
+                    let cp1Y = path.nodes[p].curveParam1y;
+                    let cp2X = path.nodes[p].curveParam2x;
+                    let cp2Y = path.nodes[p].curveParam2y;
+                    cp1X = cp1X * scaleSet + x - anchorX;
+                    cp1Y = cp1Y * scaleSet + y - anchorY;
+                    cp2X = cp2X * scaleSet + x - anchorX;
+                    cp2Y = cp2Y * scaleSet + y - anchorY;
+                    g.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, px, py);
+                }
+                else {
+                    g.lineTo(px, py);
+                }
             }
-        }
-        // Complete fill
-        if (fill !== "none") {
-            g.endFill();
+            // Complete fill
+            if (fill !== "none") {
+                g.endFill();
+            }
         }
     }
 

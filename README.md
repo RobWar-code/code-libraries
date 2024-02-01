@@ -61,12 +61,16 @@ using the corresponding PIXI features.
 
 ### Conversion Functions
 
+Caveat: This conversion function allows for only one group in the
+source drawing, it does not cater for nested groups.
+
 The conversion functions (svg to object conversion) obtain the svg 
 files from site-local server files using a standardised json 
 "shopping list" which is read first from the given site-local file.
 
 The functions are encapsulated in components in the libraries directory
-all the svg files must be placed in the public folder of the app.
+all the svg files and the list must be placed in the public folder of the 
+app.
 
 Component: 
 
@@ -139,19 +143,21 @@ The svg object has the following format:
                     stroke_opacity:1,
                     fill_opacity: 1,
                     opacity: 0.5,
-                    paths: {
-                        closed: true;
-                        nodes: [
-                            {
-                                curveParam1x: 70,
-                                curveParam1y: 40,
-                                curveParam2x: 50,
-                                curveParam2y: 30,
-                                x: 30.0,
-                                y: 50.0
-                            }
-                        ]
-                    }
+                    paths: [
+                        {
+                            closed: true;
+                            nodes: [
+                                {
+                                    curveParam1x: 70,
+                                    curveParam1y: 40,
+                                    curveParam2x: 50,
+                                    curveParam2y: 30,
+                                    x: 30.0,
+                                    y: 50.0
+                                }
+                            ]
+                        }
+                    ]
                 }
 
             ]

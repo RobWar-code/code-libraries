@@ -92,8 +92,10 @@ export default function SVGExamples () {
         console.log("found freehand", found);
         found = svgPlot(g, svgObject, "multipath", 480, 100, {x:0.5, y:0.5}, 0.4);
         console.log("found multipath", found);
+        /*
         found = svgPlot(g, svgObject, "square02", 90, 200, {x:0.5, y:0.5}, 0.4);
         console.log("found square02:", found);
+        */
     }
 
     return (

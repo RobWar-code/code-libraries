@@ -192,8 +192,10 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       let maxX = 0;
       let maxY = 0;
       let instructionList = nodeLine.split(" ");
-      let lastX, lastY = 0;
+      let lastX = 0;
+      let lastY = 0;
       let pointer = 0;
+      let count = 0;
       let relative = false;
       while (!endOfShapes) {
         // Scan to closing z or end of instructions
@@ -204,13 +206,13 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           let ins = instructionList[pointer];
           if (ins === "z" || ins === "Z" || pointer >= instructionList.length) {
             endOfShape = true;
+            ++pointer;
             break;
           }
           if (ins === "M" || ins === "m") {
             console.log("got m");
             if (!startOfShape) {
               endOfShape = true;
-              --pointer;
               break;
             }
           }
@@ -219,11 +221,12 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         }
         // Collect the node data 
         if (endOfShape) {
-          console.log("At startPointer:", instructionList[startPointer]);
+          console.log("At startPointer:", instructionList[startPointer], pointer, instructionList.length);
           let [minX1, minY1, maxX1, maxY1, pathItem, nextRelative] = processShape(instructionList, startPointer, relative, lastX, lastY);
           relative = nextRelative;
           lastX = pathItem.nodes[pathItem.nodes.length - 1].x;
           lastY = pathItem.nodes[pathItem.nodes.length - 1].y;
+          console.log("lastX, lastY:", lastX, lastY)
           // Set maximum and minimum
           if (start) {
             start = false;
@@ -241,6 +244,10 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           // Append the paths gathered from this svg path to the main list.
           pathArray.push(pathItem);
         }
+        ++count;
+        if (count > 1) {
+          console.log("pointer at end:", pointer, instructionList.length);
+        }
         if (pointer >= instructionList.length - 1) {
           endOfShapes = true;
         }
@@ -255,6 +262,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         relative ? linkType = "CurveRel" : linkType = "CurveAbs"
       }
       let startOfNodes = true;
+      let firstCoord = true;
       let endOfLine = false;
       let sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey = 0;
       let finalCurve = false;
@@ -262,14 +270,16 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       let minY, cyMin = 0;
       let maxX, cxMax = 0;
       let maxY, cyMax = 0;
-      let node = {};
+      let node = {x: lastX, y: lastY};
       let closed = false;
-      // Break when z or Z found
+      // Break when z or Z or m or M found
       for (let i = pointer; i < instructionList.length; i++) {
-        let lastNode = {}
-        lastNode = {...node};
+        console.log("node at start:", node.x, node.y);
+        let lastNode = {x: node.x, y: node.y};
+        console.log("lastNode at start:", lastNode.x, lastNode.y);
         node = {};
         let coords = instructionList[i].split(",");
+        console.log("Flag", coords[0]);
         // Process directive tags
         // Allow for closed polyline shape
         if (coords.length === 1 && !(startOfNodes && linkType !== "") ) {
@@ -323,6 +333,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
         }
         if (linkType !== "Close" && !endOfLine) {
+          console.log("linkType:", linkType)
           // Singleton Node (H or V)
           if (linkType === "HorizontalAbs") {
             node.x = parseFloat(coords[0]);
@@ -341,20 +352,14 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
             node.y = lastNode.y + parseFloat(coords[0]);
           }
           // Start of absolute nodes
-          else if (linkType === "MoveAbs" || (startOfNodes && linkType === "MoveRel")) {
+          else if (linkType === "MoveAbs") {
             node.x = parseFloat(coords[0]);
             node.y = parseFloat(coords[1]);
           }
           else if (linkType === "MoveRel") {
-            console.log("Got to:", coords[0]);
-            if (startOfNodes) {
-              node.x = lastX + parseFloat(coords[0]);
-              node.y = lastY + parseFloat(coords[1]);
-            }
-            else {
-              node.x = lastNode.x + parseFloat(coords[0]);
-              node.y = lastNode.y + parseFloat(coords[1]);
-            }
+            console.log("lastNode at MoveRel:", lastNode.x, lastNode.y);
+            node.x = lastNode.x + parseFloat(coords[0]);
+            node.y = lastNode.y + parseFloat(coords[1]);
           }
           else if (linkType === "LineAbs") {
             node.x = parseFloat(coords[0]);
@@ -428,7 +433,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
           if (!finalCurve) {
             console.log("node:", node);
-            nodeArray.push(node);
+            nodeArray.push({x: node.x, y: node.y});
           }
           else {
             nodeArray[nodeArray.length - 1].curveParam1x = cp1x;
@@ -475,7 +480,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
     }
 
     const adjustNodes = (scale, minX, minY, pathsArray) => {
-
+      console.log("pathsArray at adjustNodes:", pathsArray);
       // For each path
       for (let i = 0; i < pathsArray.length; i++) {
         // Adjust the nodes to the effective zero origin and rescale
@@ -495,6 +500,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
         }
       }
+      console.log("pathsArray at end:", pathsArray);
       return pathsArray;
     }
 

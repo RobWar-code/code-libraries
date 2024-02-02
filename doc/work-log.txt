@@ -8,15 +8,19 @@ Contents
 
     Fix multiple paths in one, problem from source data in conversion routine.
 
-        Detect z or Z end of closed shape condition
+        * Detect z or Z end of closed shape condition
 
-        Detect m or M for end of unclosed line
+        * Detect m or M for end of unclosed line
 
             * Prove it
 
-        Detect new groups in a group (or specify single groups only).
+        * Detect new groups in a group (or specify single groups only).
 
-        Apply changes to SVGConvert object output to svgPlot
+        * Apply changes to SVGConvert object output to svgPlot
+
+        Remove console.Log
+
+        Check other shapes
 
 <h1>Work Done
 

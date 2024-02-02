@@ -62,7 +62,8 @@ using the corresponding PIXI features.
 ### Conversion Functions
 
 Caveat: This conversion function allows for only one group in the
-source drawing, it does not cater for nested groups.
+source drawing, it does not cater for nested groups. Neither does
+it deal with multiple layers.
 
 The conversion functions (svg to object conversion) obtain the svg 
 files from site-local server files using a standardised json 

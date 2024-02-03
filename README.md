@@ -58,6 +58,27 @@ It has relatively limited representation of svg's allowing for
 polylines and bezier curves and fill colour and multiple paths,
 using the corresponding PIXI features.
 
+### Library Requirements
+SVGConvert.js
+svgPlot.js
+misc.js
+
+### Suggested Image Production Procedures
+For work with graphic objects in code, the following approach is
+suggested:
+
+1) Generate and select trial image using monochrome line drawings with
+DALL-E. Download as .png.
+
+2) Edit drawings using GIMP or similar. Voids should be filled with
+transparent colour.
+
+3) Import into Inkscape and trace and scale, saving the traced image as an .svg
+file
+
+4) Test the .svg image using this svg utility library. Integrate into the 
+program code. It is suggested that you incorporate the test code into your
+app, or set-up a special app for this purpose.
 
 ### Conversion Functions
 

@@ -94,13 +94,21 @@ export default function SVGExamples () {
         console.log("found multipath", found);
         found = svgPlot(g, svgObject, "square02", 90, 200, {x:0.5, y:0.5}, 0.4);
         console.log("found square02:", found);
+        found = svgPlot(g, svgObject, "hex-with-vertical", 240, 200, {x:0.5, y:0.5}, 0.4);
+        console.log("found hex-with-vertical:", found);
+        found = svgPlot(g, svgObject, "hex-split", 360, 200, {x:0.5, y:0.5}, 0.4);
+        console.log("found hex-split:", found);
+        found = svgPlot(g, svgObject, "square-in-square", 480, 200, {x:0.5, y:0.5}, 1);
+        console.log("found square-in-square:", found);
+        found = svgPlot(g, svgObject, "jug", 600, 200, {x: 0.5, y: 0.5}, 1);
+        console.log("found jug:", found);
     }
 
     return (
         <Container>
             <Row>
                 <Col>
-                    <Stage width={600} height={400} options={{background: 0xd0d000, antialias: true}}>
+                    <Stage width={800} height={500} options={{background: 0xd0d000, antialias: true}}>
                         {/* <Graphics draw={bezierSample} /> */}
                         {/* <Graphics draw={bezierSample2} /> */}
                         {/* <Graphics draw={bezierMinMaxSample} /> */}

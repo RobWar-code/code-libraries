@@ -52,19 +52,37 @@ export default function svgPlot(g, svgObject, handle, x, y, anchor, scale) {
         if (fill !== "none") {
             if (typeof fill !== "number") fill = 0;
         }
-        let stroke = pathSet.stroke;
+        let stroke;
+        if (!(stroke in pathSet)) {
+            stroke = 0x000000;
+        }
+        else {
+            stroke = pathSet.stroke;
+        }
         let strokeWidth = parseFloat(pathSet.stroke_width.substr(0, pathSet.stroke_width.length - 2));
+        if (strokeWidth < 1) strokeWidth = 1;
         if (stroke !== "none") {
             g.lineStyle(strokeWidth, stroke);
         }
         else {
             g.lineStyle(0);
         }
+        let alternateFill = false;
+        if (pathSet.paths.length > 1) {
+            alternateFill = 0xffffff;
+        }
+        let alternate = true;
         for (let path of pathSet.paths) {
             let px = path.nodes[0].x;
             let py = path.nodes[0].y;
             if (fill !== "none") {
-                g.beginFill(fill);
+                if (!alternate) {
+                    g.beginFill(fill);
+                }
+                else {
+                    g.beginFill(alternateFill);
+                }
+                alternate = !alternate;
             }
             g.moveTo(px * scaleSet + x - anchorX, py * scaleSet + y - anchorY);
             let limit = path.nodes.length - 1;

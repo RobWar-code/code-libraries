@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-
+import {isNumber} from './misc';
 
 /* 
 The SVGConvert component reads in the svgFileList and then scans the listed
@@ -280,10 +280,14 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         node = {};
         let coords = instructionList[i].split(",");
         console.log("Flag", coords[0]);
+        // Check for singleton number/flag
+        let flag = "";
+        if (coords.length === 1 && !isNumber(coords[0])) {
+          flag = coords[0];
+        }
         // Process directive tags
         // Allow for closed polyline shape
-        if (coords.length === 1 && !(startOfNodes && linkType !== "") ) {
-          let flag = coords[0];
+        if (flag && !(startOfNodes && linkType !== "")) {
           switch (flag) {
             case "C":
               linkType = "CurveAbs";
@@ -345,7 +349,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
           else if (linkType === "VerticalAbs") {
             node.x = lastNode.x;
-            node.y = lastNode.y;
+            node.y = parseFloat(coords[0]);
           }
           else if (linkType === "VerticalRel") {
             node.x = lastNode.x;
@@ -402,6 +406,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
             [cxMin,  cyMin, cxMax, cyMax] = getCurveMinMax(sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey);
           }
           else if (linkType === "CurveRel") {
+            console.log("Got to curveRel")
             finalCurve = false;
             if (instructionList[i + 2] === "z" || instructionList[i + 2] === "Z") {
               finalCurve = true;
@@ -433,7 +438,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           }
           if (!finalCurve) {
             console.log("node:", node);
-            nodeArray.push({x: node.x, y: node.y});
+            nodeArray.push(node);
           }
           else {
             nodeArray[nodeArray.length - 1].curveParam1x = cp1x;

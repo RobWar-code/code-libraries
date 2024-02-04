@@ -20,6 +20,7 @@ import MovingCircleToArcContact from "./routes/geometry/moving-circle-to-arc-con
 import SVGRoot from "./routes/pixi-svg/svg-root";
 import SVGIntro from "./routes/pixi-svg/svg-intro";
 import SVGExamples from "./routes/pixi-svg/svg-examples";
+import SVGTests from "./routes/pixi-svg/svg-tests";
 
 const router = createBrowserRouter([
     {
@@ -75,6 +76,10 @@ const router = createBrowserRouter([
                     {
                         path: "/pixi-svg/svg-examples",
                         element: <SVGExamples />
+                    },
+                    {
+                        path: "/pixi-svg/svg-tests",
+                        element: <SVGTests />
                     }
 
                 ]

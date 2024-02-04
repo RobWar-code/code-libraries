@@ -80,6 +80,28 @@ file
 program code. It is suggested that you incorporate the test code into your
 app, or set-up a special app for this purpose.
 
+### svg Data
+The svg data is as provided in the inkscape originated file format.
+
+#### Traced Format Svg
+When a .png file is imported and traced by inkscape, it produces a single
+path d= pathset. The first path is the black background and the subsequent
+the transparent feature overlay.
+
+This creates a problem if the graphic has both solid and transparent regions,
+since in effect we are using only two colours, not three.
+
+Assuming that we can identify the regions in the svg that should be transparent
+we then have the problem of how to "cut them out" from the first black background
+path.
+
+To make a cut-out we can establish four nodes two in the outer path and two in the
+cut-out path such that they form a channel between the two shapes. The shape of
+the cut-out can then be merged in with the coordinates of the outer path.
+
+The function doPathCutout(outerPath, cutoutPath) in svgPlot.js can be used for this
+purpose, using the svgObject type data.
+
 ### Conversion Functions
 
 Caveat: This conversion function allows for only one group in the

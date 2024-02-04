@@ -6,8 +6,22 @@ Contents
 
 <h1>Work Due
 
-    Fix multiple paths in one, problem from source data in conversion routine.
+    Resolve inclusion of transparent areas for multipath traces
 
+        Write path cutout routine for resolved path objects (SVGObject)
+
+        Allow for cutout transparency added to svg trace paths
+
+        Draft test shape
+
+
+<h1>Work Done
+
+    04/02/2024
+    
+    * Fix multiple paths in one, problem from source data in conversion routine.
+
+ 
         * Detect z or Z end of closed shape condition
 
         * Detect m or M for end of unclosed line
@@ -18,11 +32,12 @@ Contents
 
         * Apply changes to SVGConvert object output to svgPlot
 
-        Remove console.Log
+        * Remove console.Log
 
-        Check other shapes
+        * Check other shapes
 
-<h1>Work Done
+        * Determine the rendering logic for multipath traces
+
 
     29/01/2024
 

@@ -1,9 +1,9 @@
 import {Container, Row, Col} from "react-bootstrap";
 import {Stage, Graphics} from "@pixi/react";
 import {useOutletContext} from "react-router-dom";
-import {svgPlot} from "../../libraries/svgPlot";
+import {svgPlot, doPathCutout} from "../../libraries/svgPlot";
 
-export default function SVGExamples () {
+export default function SVGTests () {
     const {svgLoaded, svgObject} = useOutletContext();
 
     console.log("svgObject on page", svgObject);
@@ -108,6 +108,7 @@ export default function SVGExamples () {
         <Container>
             <Row>
                 <Col>
+                    <h1>Miscellaneous Development Tests</h1>
                     <Stage width={800} height={500} options={{background: 0xd0d000, antialias: true}}>
                         {/* <Graphics draw={bezierSample} /> */}
                         {/* <Graphics draw={bezierSample2} /> */}

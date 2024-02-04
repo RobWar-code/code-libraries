@@ -1,6 +1,10 @@
 [
     {
-        "file" : "jug02.svg",
+        "file" : "hex-split.svg",
+        "handle" : "hex-split"
+    },
+    {
+        "file" : "jug04.svg",
         "handle" : "jug"
     }
 ]

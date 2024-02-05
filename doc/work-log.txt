@@ -6,16 +6,18 @@ Contents
 
 <h1>Work Due
 
-    Resolve inclusion of transparent areas for multipath traces
-
-        Write path cutout routine for resolved path objects (SVGObject)
-
-        Allow for cutout transparency added to svg trace paths
-
-        Draft test shape
-
+    Test Jug Image at scale 0.4
 
 <h1>Work Done
+    05/02/2024
+
+    * Resolve inclusion of transparent areas for multipath traces
+
+        * Write path cutout routine for resolved path objects (SVGObject)
+
+        * Allow for cutout transparency added to svg trace paths
+
+        * Draft test shape
 
     04/02/2024
     

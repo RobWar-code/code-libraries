@@ -70,15 +70,28 @@ suggested:
 1) Generate and select trial image using monochrome line drawings with
 DALL-E. Download as .png.
 
-2) Edit drawings using GIMP or similar. Voids should be filled with
-transparent colour.
+2) Edit drawings using GIMP or similar.
 
 3) Import into Inkscape and trace and scale, saving the traced image as an .svg
 file
 
-4) Test the .svg image using this svg utility library. Integrate into the 
+4) Edit any transparent areas manually using inkscape, following the procedures
+given below for establishing transparent areas.
+
+5) Test the .svg image using this svg utility library. Integrate into the 
 program code. It is suggested that you incorporate the test code into your
 app, or set-up a special app for this purpose.
+
+#### Establishing Transparent Areas in an Inkscape Trace
+
+1) Following around the area of drawing to be made transparent, use the
+bezier curve drawing tool to set the nodes and lines of the area to be
+made transparent. Fill this 50% Opaque Red (0xff000080).
+
+2) Move your shape area out of the way and from the trace, delete the
+nodes within your area.
+
+3) Move your shape back into position then save the svg drawing.
 
 ### svg Data
 The svg data is as provided in the inkscape originated file format.
@@ -101,6 +114,16 @@ the cut-out can then be merged in with the coordinates of the outer path.
 
 The function doPathCutout(outerPath, cutoutPath) in svgPlot.js can be used for this
 purpose, using the svgObject type data.
+
+As a convention, to allow the graphic designer to incorporate transparent
+regions easily into their graphic traces. The inkscape user first outlines the
+region to be made transparent using the bezier node/line tool. He sets
+the fill to 50% opaque red. He then deletes the trace design nodes that lie beneath, 
+and then moves his transparent shape back into position.
+
+When the svg conversion program detects the fill 0xff0000 and fill-opacity opacity 0.5
+it marks the pathSet object with the element cutout: true, and also sets the flag
+cutoutsDue. So that the conversion program knows to perform the cutout operations.
 
 ### Conversion Functions
 

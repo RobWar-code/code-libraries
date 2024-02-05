@@ -47,73 +47,75 @@ export function svgPlot(g, svgObject, handle, x, y, anchor, scale) {
     
     // for each path in the drawing
     for (let pathSet of svgItem.pathSets) {
-        // Set-up styles
-        let fill = pathSet.fill;
-        if (fill !== "none") {
-            if (typeof fill !== "number") fill = 0;
-        }
-        let stroke;
-        if (!(stroke in pathSet)) {
-            stroke = 0x000000;
-        }
-        else {
-            stroke = pathSet.stroke;
-        }
-        let strokeWidth = parseFloat(pathSet.stroke_width.substr(0, pathSet.stroke_width.length - 2));
-        if (strokeWidth < 1) strokeWidth = 1;
-        if (stroke !== "none") {
-            g.lineStyle(strokeWidth, stroke);
-        }
-        else {
-            g.lineStyle(0);
-        }
-        let trace = false;
-        if (pathSet.paths.length > 1) {
-            trace = true;
-        }
-        let count = 0;
-        for (let path of pathSet.paths) {
-            
-            let px = path.nodes[0].x;
-            let py = path.nodes[0].y;
+        if (!pathSet.cutout) {
+            // Set-up styles
+            let fill = pathSet.fill;
             if (fill !== "none") {
-                if (trace && count > 0) {
-                    g.beginFill(0xffffff)
-                }
-                else {
-                    g.beginFill(fill);
-                }
+                if (typeof fill !== "number") fill = 0;
             }
-            g.moveTo(px * scaleSet + x - anchorX, py * scaleSet + y - anchorY);
-            let limit = path.nodes.length - 1;
-            if (path.closed) limit = path.nodes.length;
-            for (let i = 1; i <= limit; i++) {
-                let p = i;
-                if (path.closed && i === limit) p = 0;
-                px = path.nodes[p].x;
-                py = path.nodes[p].y;
-                px = px * scaleSet + x - anchorX;
-                py = py * scaleSet + y - anchorY;
-                if ("curveParam1x" in path.nodes[p]) {
-                    let cp1X = path.nodes[p].curveParam1x;
-                    let cp1Y = path.nodes[p].curveParam1y;
-                    let cp2X = path.nodes[p].curveParam2x;
-                    let cp2Y = path.nodes[p].curveParam2y;
-                    cp1X = cp1X * scaleSet + x - anchorX;
-                    cp1Y = cp1Y * scaleSet + y - anchorY;
-                    cp2X = cp2X * scaleSet + x - anchorX;
-                    cp2Y = cp2Y * scaleSet + y - anchorY;
-                    g.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, px, py);
-                }
-                else {
-                    g.lineTo(px, py);
-                }
+            let stroke;
+            if (!(stroke in pathSet)) {
+                stroke = 0x000000;
             }
-            // Complete fill
-            if (fill !== "none") {
-                g.endFill();
+            else {
+                stroke = pathSet.stroke;
             }
-            ++count;
+            let strokeWidth = parseFloat(pathSet.stroke_width.substr(0, pathSet.stroke_width.length - 2));
+            if (strokeWidth < 1) strokeWidth = 1;
+            if (stroke !== "none") {
+                g.lineStyle(strokeWidth, stroke);
+            }
+            else {
+                g.lineStyle(0);
+            }
+            let trace = false;
+            if (pathSet.paths.length > 1) {
+                trace = true;
+            }
+            let count = 0;
+            for (let path of pathSet.paths) {
+                
+                let px = path.nodes[0].x;
+                let py = path.nodes[0].y;
+                if (fill !== "none") {
+                    if (trace && count > 0) {
+                        g.beginFill(0xffffff)
+                    }
+                    else {
+                        g.beginFill(fill);
+                    }
+                }
+                g.moveTo(px * scaleSet + x - anchorX, py * scaleSet + y - anchorY);
+                let limit = path.nodes.length - 1;
+                if (path.closed) limit = path.nodes.length;
+                for (let i = 1; i <= limit; i++) {
+                    let p = i;
+                    if (path.closed && i === limit) p = 0;
+                    px = path.nodes[p].x;
+                    py = path.nodes[p].y;
+                    px = px * scaleSet + x - anchorX;
+                    py = py * scaleSet + y - anchorY;
+                    if ("curveParam1x" in path.nodes[p]) {
+                        let cp1X = path.nodes[p].curveParam1x;
+                        let cp1Y = path.nodes[p].curveParam1y;
+                        let cp2X = path.nodes[p].curveParam2x;
+                        let cp2Y = path.nodes[p].curveParam2y;
+                        cp1X = cp1X * scaleSet + x - anchorX;
+                        cp1Y = cp1Y * scaleSet + y - anchorY;
+                        cp2X = cp2X * scaleSet + x - anchorX;
+                        cp2Y = cp2Y * scaleSet + y - anchorY;
+                        g.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, px, py);
+                    }
+                    else {
+                        g.lineTo(px, py);
+                    }
+                }
+                // Complete fill
+                if (fill !== "none") {
+                    g.endFill();
+                }
+                ++count;
+            }
         }
     }
 
@@ -218,8 +220,11 @@ export function doPathCutout(outerPath, cutoutPath) {
         ]
     }
 
-    const getPathWithCutout = (outerPath, cutoutPath, outerIncisionX, 
-        outerIncisionY, outerNearNode1, outerNearNode2, cutIncisionX, cutIncisionY,
+    const getPathWithCutout = (outerPath, cutoutPath, outerIncisionX1, 
+        outerIncisionY1, outerIncisionX2, outerIncisionY2,
+        outerNearNode1, outerNearNode2, 
+        cutIncisionX1, cutIncisionY1,
+        cutIncisionX2, cutIncisionY2,
         cutNearNode1, cutNearNode2) => {
         // Transfer the nodes from the main outer path, to the new array
         let pathWithCutout = [];
@@ -230,39 +235,49 @@ export function doPathCutout(outerPath, cutoutPath) {
                     pathWithCutout.push(outerPath[i]);
                     before = false;
                 }
-                pathWithCutout = insertCutout(pathWithCutout, cutoutPath, outerIncisionX, 
-                    outerIncisionY, cutIncisionX, cutIncisionY,
-                    cutNearNode1, cutNearNode2);   
+                
+                pathWithCutout = insertCutout(pathWithCutout, cutoutPath, outerIncisionX1, 
+                    outerIncisionY1, cutIncisionX1, cutIncisionY1,
+                    outerIncisionX2, outerIncisionY2,
+                    cutIncisionX2, cutIncisionY2, 
+                    outerNearNode1, outerNearNode2,
+                    cutNearNode1, cutNearNode2);
+                 
             }
             if (before) pathWithCutout.push(outerPath[i]);
         }
+        return pathWithCutout;
     }
 
-    const insertCutout = (pathWithCutout, cutoutPath, outerIncisionX, 
-        outerIncisionY, cutIncisionX, cutIncisionY,
+    const insertCutout = (pathWithCutout, cutoutPath, outerIncisionX1, 
+        outerIncisionY1, cutIncisionX1, cutIncisionY1, outerIncisionX2, 
+        outerIncisionY2, cutIncisionX2, cutIncisionY2, 
+        outerNearNode1, outerNearNode2,
         cutNearNode1, cutNearNode2) => {
         // Set the first side of the incision
-        pathWithCutout.push({x: outerIncisionX, y: outerIncisionY});
-        pathWithCutout.push({x: cutIncisionX, y: cutIncisionY});
+        pathWithCutout.push({x: outerIncisionX1, y: outerIncisionY1});
+        pathWithCutout.push({x: cutIncisionX1, y: cutIncisionY1});
         // Add in the path of the cutout
         // Determine which side of the cutout node the cut arises
-        let before = false;
+        let before = true;
         if (cutNearNode2 < cutNearNode1 || cutNearNode2 === cutoutPath.length - 1) before = true;
-        let p;
+        let p = cutNearNode1;
         for (let i = 0; i < cutoutPath.length; i++) {
             if (before) {
-                p = cutNearNode1 - i - 1;
+                p = p - 1;
                 if (p < 0) p = cutoutPath.length - 1;
             }
             else {
-                p = cutNearNode1 + i + 1;
+                p = p + 1;
                 if (p >= cutoutPath.length) p = 0;
             }
             pathWithCutout.push(cutoutPath[p]);
         }
-        // Set the final cutout incision   
-        pathWithCutout.push({x: cutIncisionX, y: cutIncisionY})
-        pathWithCutout.push({x: outerIncisionX, y: outerIncisionY});
+        // Set the final cutout incision 
+        pathWithCutout.push({x: cutIncisionX2, y: cutIncisionY2})
+        pathWithCutout.push({x: outerIncisionX2, y: outerIncisionY2});
+
+        return pathWithCutout;
     }
 
     let [
@@ -281,14 +296,44 @@ export function doPathCutout(outerPath, cutoutPath) {
     ] = findNearestNodes(outerPath, cutoutPath);
 
     // Make the incision cut to the cutout path
-    let outerIncisionX = outerNearNode1X + (outerNearNode1X - outerNearNode2X) / 2;
-    let outerIncisionY = outerNearNode1Y + (outerNearNode1Y - outerNearNode2Y) / 2;
-    let cutIncisionX = cutNearNode1X + (cutNearNode1X - cutNearNode2X) / 2;
-    let cutIncisionY = cutNearNode1Y + (cutNearNode1X - cutNearNode2Y) / 2;
+    let outerIncisionX1 = outerNearNode1X + (outerNearNode2X - outerNearNode1X) / 2;
+    let outerIncisionY1 = outerNearNode1Y + (outerNearNode2Y - outerNearNode1Y) / 2;
+    let outerIncisionX2, outerIncisionY2;
+    if (outerNearNode2X < outerNearNode1X) {
+        outerIncisionX2 = outerIncisionX1 - 1;
+    }
+    else {
+        outerIncisionX2 = outerIncisionX1 + 1;
+    }
+    if (outerNearNode2Y < outerNearNode1Y) {
+        outerIncisionY2 = outerIncisionY1 - 1;
+    }
+    else {
+        outerIncisionY2 = outerIncisionY1 + 1;
+    }
+    let cutIncisionX1 = cutNearNode1X + (cutNearNode2X - cutNearNode1X) / 2;
+    let cutIncisionY1 = cutNearNode1Y + (cutNearNode2Y - cutNearNode1Y) / 2;
+    let cutIncisionX2, cutIncisionY2;
+    if (cutNearNode2X < cutNearNode1X) {
+        cutIncisionX2 = cutIncisionX1 - 3;
+    }
+    else {
+        cutIncisionX2 = cutIncisionX1 + 3;
+    }
+    if (cutNearNode2Y < cutNearNode1Y) {
+        cutIncisionY2 = cutIncisionY1 - 3;
+    }
+    else {
+        cutIncisionY2 = cutIncisionY1 + 3;
+    }
 
-    let pathWithCutout = getPathWithCutout = (outerPath, cutoutPath, outerIncisionX, 
-        outerIncisionY, outerNearNode1, outerNearNode2, cutIncisionX, cutIncisionY,
+    let pathWithCutout = getPathWithCutout(outerPath, cutoutPath, outerIncisionX1, 
+        outerIncisionY1, outerIncisionX2, outerIncisionY2, 
+        outerNearNode1, outerNearNode2, 
+        cutIncisionX1, cutIncisionY1,
+        cutIncisionX2, cutIncisionY2,
         cutNearNode1, cutNearNode2);
 
+    return pathWithCutout;
 
 }

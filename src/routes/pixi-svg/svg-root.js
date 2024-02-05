@@ -10,8 +10,10 @@ export default function SVGRoot() {
     const [svgObject, setSvgObject] = useState([]);
 
     useEffect (() => {
-        console.log("svgObject:", svgObject);
-    }, [svgObject]);
+        if (svgLoaded) {
+            console.log("svgObject:", svgObject);
+        }
+    }, [svgObject, svgLoaded]);
 
     return (
         <>

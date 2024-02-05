@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {isNumber} from './misc';
+import {doPathCutout} from './svgPlot';
 
 /* 
 The SVGConvert component reads in the svgFileList and then scans the listed
@@ -107,6 +108,7 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       let maxY = 0;
       let pathCount = 0;
       let gotPathSet = false;
+      let gotCutouts = false;
       // Split svgData into lines
       const svgArray = svgData.current.split("\n");
       // Parse each line
@@ -151,6 +153,10 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
               }
               styleObj.paths = pathArray;
             }
+            if (styleObj.fill_opacity === "0.5" && styleObj.fill === 0xff0000) {
+              styleObj.cutout = true;
+              gotCutouts = true;
+            }
             ++pathCount;
             pathsArray.push(styleObj);
           }
@@ -159,9 +165,28 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       // Adjust the path nodes to scale and origin
       const scale = 2;
       pathsArray = adjustNodes(scale, minX, minY, pathsArray);
+      if (gotCutouts) pathsArray = doCutouts(pathsArray);
       let width = (maxX - minX + 1) * scale;
       let height = (maxY - minY + 1) * scale;
       return [pathsArray, width, height];
+    }
+
+    const doCutouts = (pathsArray) => {
+
+      // Extract the first path from the traced svg
+      let blackBackground = pathsArray[0].paths[0].nodes;
+
+      // Scan the paths array for each cut-out
+      for (let i = 1; i < pathsArray.length; i++) {
+        let cutoutPath = pathsArray[i].paths[0].nodes;
+        if (pathsArray[i].cutout) {
+          blackBackground = doPathCutout(blackBackground, cutoutPath);
+        }
+      }
+
+      pathsArray[0].paths[0].nodes = blackBackground;
+
+      return pathsArray;
     }
 
     const processStyleLine = (styleLine) => {
@@ -195,7 +220,6 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
       let lastX = 0;
       let lastY = 0;
       let pointer = 0;
-      let count = 0;
       let relative = false;
       while (!endOfShapes) {
         // Scan to closing z or end of instructions
@@ -241,7 +265,6 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
           // Append the paths gathered from this svg path to the main list.
           pathArray.push(pathItem);
         }
-        ++count;
         if (pointer >= instructionList.length - 1) {
           endOfShapes = true;
         }
@@ -256,7 +279,6 @@ export default function SVGConvert({svgFileList, svgFilePath, svgObject, setSvgO
         relative ? linkType = "CurveRel" : linkType = "CurveAbs"
       }
       let startOfNodes = true;
-      let firstCoord = true;
       let endOfLine = false;
       let sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey = 0;
       let finalCurve = false;

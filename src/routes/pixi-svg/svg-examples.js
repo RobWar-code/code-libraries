@@ -100,7 +100,7 @@ export default function SVGExamples () {
         console.log("found hex-split:", found);
         found = svgPlot(g, svgObject, "square-in-square", 480, 200, {x:0.5, y:0.5}, 1);
         console.log("found square-in-square:", found);
-        found = svgPlot(g, svgObject, "jug", 600, 200, {x: 0.5, y: 0.5}, 1);
+        found = svgPlot(g, svgObject, "jug", 600, 200, {x: 0.5, y: 0.5}, 0.4);
         console.log("found jug:", found);
     }
 
